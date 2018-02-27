@@ -14,7 +14,7 @@
  * Omar Kacimi         -  Initial implementation
  * Andrew Berezovskyi  -  Lyo contribution updates
  */
-package org.eclipse.lyo.oslc4j.trs.consumer.TRSProvider.handler;
+package org.eclipse.lyo.oslc4j.trs.consumer.handlers;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -25,7 +25,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.log4j.Logger;
 import org.eclipse.lyo.oslc4j.trs.consumer.concurrent.TRSTaskHandler;
 import org.eclipse.lyo.oslc4j.trs.consumer.httpclient.TRSHttpClient;
-import org.eclipse.lyo.oslc4j.trs.consumer.sparql.SparqlUtil;
+import org.eclipse.lyo.oslc4j.trs.consumer.util.SparqlUtil;
 
 import net.oauth.OAuthException;
 

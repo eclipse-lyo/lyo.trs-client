@@ -12,7 +12,7 @@
  * Omar Kacimi         -  Initial implementation
  * Andrew Berezovskyi  -  Lyo contribution updates
  */
-package org.eclipse.lyo.oslc4j.trs.consumer.sparql;
+package org.eclipse.lyo.oslc4j.trs.consumer.util;
 
 import java.io.IOException;
 
@@ -26,7 +26,6 @@ import org.eclipse.lyo.core.trs.ChangeEvent;
 import org.eclipse.lyo.core.trs.Creation;
 import org.eclipse.lyo.core.trs.Deletion;
 import org.eclipse.lyo.core.trs.Modification;
-import org.eclipse.lyo.oslc4j.trs.consumer.rdf.RdfUtil;
 // FIXME Andrew@2018-02-26: why RDF4J here?
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;

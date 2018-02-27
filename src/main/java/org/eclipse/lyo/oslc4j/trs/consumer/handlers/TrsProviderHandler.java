@@ -12,7 +12,7 @@
  * Omar Kacimi         -  Initial implementation
  * Andrew Berezovskyi  -  Lyo contribution updates
  */
-package org.eclipse.lyo.oslc4j.trs.consumer.TRSProvider.handler;
+package org.eclipse.lyo.oslc4j.trs.consumer.handlers;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -25,10 +25,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.xml.datatype.DatatypeConfigurationException;
+import jdk.internal.joptsimple.internal.Strings;
 import net.oauth.OAuthException;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.vocabulary.RDF;
-import org.apache.log4j.Logger;
 import org.eclipse.lyo.core.trs.Base;
 import org.eclipse.lyo.core.trs.ChangeEvent;
 import org.eclipse.lyo.core.trs.ChangeLog;
@@ -44,8 +44,10 @@ import org.eclipse.lyo.oslc4j.trs.consumer.exceptions.ServerRollBackException;
 import org.eclipse.lyo.oslc4j.trs.consumer.concurrent.TRSTaskHandler;
 import org.eclipse.lyo.oslc4j.trs.consumer.exceptions.JenaModelException;
 import org.eclipse.lyo.oslc4j.trs.consumer.httpclient.TRSHttpClient;
-import org.eclipse.lyo.oslc4j.trs.consumer.sparql.SparqlUtil;
+import org.eclipse.lyo.oslc4j.trs.consumer.util.SparqlUtil;
 import org.eclipse.lyo.oslc4j.trs.consumer.util.ChangeEventComparator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Base class for every TRS provider. Handles all periodic operations for a TRS
@@ -57,7 +59,7 @@ import org.eclipse.lyo.oslc4j.trs.consumer.util.ChangeEventComparator;
  * @author Omar
  */
 public class TrsProviderHandler extends TRSTaskHandler {
-    final static Logger logger = Logger.getLogger(TrsProviderHandler.class);
+    private final static Logger log = LoggerFactory.getLogger(TrsProviderHandler.class);
 
     /**
      * The URI of the last processed change event
@@ -68,7 +70,19 @@ public class TrsProviderHandler extends TRSTaskHandler {
      * The entry point URI for the tracked resource set of this provider
      */
     protected String trsUriBase;
+    private ChangeEventListener listener;
 
+    /**
+     *
+     * @param trsUriBase
+     * @param sparqlQueryService
+     * @param sparqlUpdateService Set to null to disable the triplestore update
+     * @param trsHttpClient
+     * @param userName
+     * @param pwd
+     * @param sparql_user
+     * @param sparql_pwd
+     */
     public TrsProviderHandler(String trsUriBase, String sparqlQueryService, String sparqlUpdateService,
             TRSHttpClient trsHttpClient, String userName, String pwd, String sparql_user, String sparql_pwd) {
         super(trsHttpClient, sparqlUpdateService, sparqlQueryService, sparql_user, sparql_pwd, userName, pwd);
@@ -88,6 +102,15 @@ public class TrsProviderHandler extends TRSTaskHandler {
         return "TrsProviderHandler{" + "trsUriBase='" + trsUriBase + '\'' + '}';
     }
 
+    public void attachListener(ChangeEventListener listener) {
+        // FIXME Andrew@2018-02-27: make it a list
+        if(this.listener != null) {
+            throw new IllegalStateException("A listener has been attached already, a list is not supported yet.");
+        }
+
+        this.listener = listener;
+    }
+
     /**
      * Implementation of the method inherited from the TRSTaskHandler class. a
      * call to the periodic processing of the change events is done. If an
@@ -101,7 +124,8 @@ public class TrsProviderHandler extends TRSTaskHandler {
             super.processTRSTask();
             pollAndProcessChanges();
         } catch (Exception e) {
-            logger.error(e);
+            log.error("Error polling & processing TRS change logs", e);
+            log.debug("Resetting the URI of the last successfully processed event");
             lastProcessedChangeEventUri = null;
         }
     }
@@ -117,7 +141,7 @@ public class TrsProviderHandler extends TRSTaskHandler {
      */
     public List<Base> updateBases(TrackedResourceSet updatedTrs)
             throws URISyntaxException, OAuthException, JenaModelException, IOException {
-        List<Base> bases = new ArrayList<Base>();
+        List<Base> bases = new ArrayList<>();
         URI firstBasePageUri = updatedTrs.getBase();
         Base currentBase = fetchRemoteBase(firstBasePageUri.toString());
         Page nextPage = currentBase.getNextPage();
@@ -149,8 +173,8 @@ public class TrsProviderHandler extends TRSTaskHandler {
             throws ServerRollBackException, IOException, OAuthException, JenaModelException, URISyntaxException {
 
         ChangeLog firstChangeLog = updatedTrs.getChangeLog();
-        List<ChangeLog> changeLogs = new ArrayList<ChangeLog>();
-        boolean foundSyncEvent = false;
+        List<ChangeLog> changeLogs = new ArrayList<>();
+        boolean foundSyncEvent;
 
         foundSyncEvent = fetchRemoteChangeLogs(firstChangeLog, changeLogs);
         if (!foundSyncEvent) {
@@ -179,7 +203,7 @@ public class TrsProviderHandler extends TRSTaskHandler {
     public boolean fetchRemoteChangeLogs(ChangeLog currentChangeLog, List<ChangeLog> changeLogs)
             throws URISyntaxException, OAuthException, JenaModelException, IOException {
         boolean foundChangeEvent = false;
-        URI previousChangeLog = null;
+        URI previousChangeLog;
         do {
             if (currentChangeLog != null) {
                 changeLogs.add(currentChangeLog);
@@ -193,7 +217,7 @@ public class TrsProviderHandler extends TRSTaskHandler {
                 break;
             }
         }
-        while (previousChangeLog != null && !RDF.nil.getURI().equals(previousChangeLog.toString()));
+        while (!RDF.nil.getURI().equals(previousChangeLog.toString()));
         return foundChangeEvent;
     }
 
@@ -220,11 +244,11 @@ public class TrsProviderHandler extends TRSTaskHandler {
             throws URISyntaxException, OAuthException, JenaModelException, IOException, ServerRollBackException,
             RepresentationRetrievalException {
 
-        logger.info("started dealing with TRS Provider: " + trsUriBase);
+        log.info("started dealing with TRS Provider: " + trsUriBase);
 
         TrackedResourceSet updatedTrs = extractRemoteTrs();
         boolean indexingStage = false;
-        List<URI> baseMembers = new ArrayList<URI>();
+        List<URI> baseMembers = new ArrayList<>();
 
         /*
          * If it is the indexing phase retrieve the representation of the base
@@ -259,6 +283,7 @@ public class TrsProviderHandler extends TRSTaskHandler {
                 processChangeEvent(changeEvent);
                 lastProcessedChangeEventUri = changeEvent.getAbout();
             } catch (Exception e) {
+                log.error("Error processing {}: ", changeEvent, e);
                 return;
             }
         }
@@ -275,16 +300,16 @@ public class TrsProviderHandler extends TRSTaskHandler {
                 String graphName = baseMemberUri.toString();
                 Model graphToUpload = (Model) fetchTRSRemoteResource(graphName, Model.class);
                 if (graphToUpload != null) {
-                    logger.debug("processing base member " + graphName + " creation event ");
+                    log.debug("processing base member " + graphName + " creation event ");
                     SparqlUtil.createGraph(graphName, sparqlUpdateService);
                     SparqlUtil.addTriplesToNamedGraph(graphToUpload, graphName, sparqlUpdateService);
-                    logger.debug("finished processing base member " + graphName + " creation event ");
+                    log.debug("finished processing base member " + graphName + " creation event ");
                 }
 
             }
         }
 
-        logger.info("finished dealing with TRS Provider: " + trsUriBase);
+        log.info("finished dealing with TRS Provider: " + trsUriBase);
 
     }
 
@@ -320,31 +345,37 @@ public class TrsProviderHandler extends TRSTaskHandler {
         Collections.reverse(changeLogs);
 
         ChangeLog firstChangeLog = changeLogs.get(0);
-        List<ChangeEvent> changeEvents = firstChangeLog.getChange();
-        Collections.sort(changeEvents, new ChangeEventComparator());
-        firstChangeLog.setChange(changeEvents);
+        List<ChangeEvent> firstChangelogEvents = firstChangeLog.getChange();
 
-        changeEvents = firstChangeLog.getChange();
+        // sort the events, needed for the cut-off later
+        firstChangelogEvents.sort(new ChangeEventComparator());
+        firstChangeLog.setChange(firstChangelogEvents);
 
+//        firstChangelogEvents = firstChangeLog.getChange();
+
+        // if the last processed event is in the CL, it must be in the first
+        // see 'fetchUpdatedChangeLogs' for details why
         int indexOfSync = -1;
-        for (ChangeEvent changeEvent : changeEvents) {
+        for (ChangeEvent changeEvent : firstChangelogEvents) {
             if (changeEvent.getAbout().equals(lastProcessedChangeEventUri)) {
-                indexOfSync = changeEvents.indexOf(changeEvent);
+                indexOfSync = firstChangelogEvents.indexOf(changeEvent);
                 break;
             }
         }
 
-        changeEvents = changeEvents.subList(indexOfSync + 1, changeEvents.size());
+        firstChangelogEvents = firstChangelogEvents.subList(indexOfSync + 1, firstChangelogEvents.size());
+        firstChangeLog.setChange(firstChangelogEvents);
 
-        firstChangeLog.setChange(changeEvents);
-
-        List<ChangeEvent> changesToProcess = new ArrayList<ChangeEvent>();
-
+        List<ChangeEvent> changesToProcess = new ArrayList<>();
+        // merge all changelogs, events after the cutoff from the first log are there
         for (ChangeLog changeLog : changeLogs) {
             changesToProcess.addAll(changeLog.getChange());
         }
+        changesToProcess.sort(new ChangeEventComparator());
 
-        Collections.sort(changesToProcess, new ChangeEventComparator());
+        // replace all change events for a single resource with the latest event only
+        // FIXME Andrew@2018-02-27: this is not going to work for getting all changes via MQTT embedding
+        // TODO Andrew@2018-02-27: output warning for the events we missed if compress eliminated anything
         List<ChangeEvent> compressedChanges = compressChanges(changesToProcess);
         return compressedChanges;
     }
@@ -357,19 +388,27 @@ public class TrsProviderHandler extends TRSTaskHandler {
      */
     public void processChangeEvent(ChangeEvent changeEvent) throws IOException, OAuthException, URISyntaxException {
         URI changed = changeEvent.getChanged();
-        logger.info("processing resource " + changed.toString() + " change event ");
+        log.info("processing resource " + changed.toString() + " change event ");
 
-        if (changeEvent instanceof Deletion) {
-            SparqlUtil.processChangeEvent(changeEvent, null, sparqlUpdateService);
-        } else {
-
-            Model updatedResRepresentation = (Model) fetchTRSRemoteResource(changed.toString(), Model.class);
-            if (updatedResRepresentation != null) {
-                SparqlUtil.processChangeEvent(changeEvent, updatedResRepresentation, sparqlUpdateService);
-            }
+        Model trsResourceModel = null;
+        if (!(changeEvent instanceof Deletion)) {
+            trsResourceModel = (Model) fetchTRSRemoteResource(changed.toString(), Model.class);
         }
 
-        logger.info("finished processing resource " + changed.toString() + " change event ");
+        if (!Strings.isNullOrEmpty(sparqlUpdateService)) {
+            if (changeEvent instanceof Deletion) {
+                SparqlUtil.processChangeEvent(changeEvent, null, sparqlUpdateService);
+            } else {
+                if (trsResourceModel != null) {
+                    SparqlUtil.processChangeEvent(changeEvent, trsResourceModel, sparqlUpdateService);
+                }
+            }
+        }
+        if(listener != null) {
+            listener.handleChangeEvent(changeEvent, trsResourceModel);
+        }
+
+        log.info("finished processing resource " + changed.toString() + " change event ");
     }
 
     /**
@@ -380,19 +419,24 @@ public class TrsProviderHandler extends TRSTaskHandler {
      * @return an ordered optimized list of change events
      */
     public List<ChangeEvent> compressChanges(List<ChangeEvent> changesToProcess) {
-        Map<URI, ChangeEvent> resToChangeEventMap = new HashMap<URI, ChangeEvent>();
+        Map<URI, ChangeEvent> resToChangeEventMap = new HashMap<>();
 
         for (ChangeEvent changeToProcess : changesToProcess) {
             resToChangeEventMap.put(changeToProcess.getChanged(), changeToProcess);
         }
 
-        List<ChangeEvent> reducedChangesList = null;
+        // TODO Andrew@2018-02-27: create compressed list in one go
+        // Algorithm:
+        // - use a hashset to keep track of the resource uris
+        // - walk the changesToProcess in reverse
+        // - reverse the returned list
+        List<ChangeEvent> reducedChangesList;
         if (!resToChangeEventMap.isEmpty()) {
-            reducedChangesList = new ArrayList<ChangeEvent>(resToChangeEventMap.values());
-            Collections.sort(reducedChangesList, new ChangeEventComparator());
+            reducedChangesList = new ArrayList<>(resToChangeEventMap.values());
+            reducedChangesList.sort(new ChangeEventComparator());
 
         } else {
-            reducedChangesList = new ArrayList<ChangeEvent>();
+            reducedChangesList = new ArrayList<>();
         }
         return reducedChangesList;
     }
@@ -442,8 +486,8 @@ public class TrsProviderHandler extends TRSTaskHandler {
      * @return the TRS pojo extracted from the TRS rdf model
      */
     protected TrackedResourceSet extractTrsFromRdfModel(Model rdFModel) throws JenaModelException, URISyntaxException {
-        logger.debug("started extracting tracked resource set from rdf model");
-        Object[] trackedResourceSets = null;
+        log.debug("started extracting tracked resource set from rdf model");
+        Object[] trackedResourceSets;
 
         try {
             trackedResourceSets = JenaModelHelper.fromJenaModel(rdFModel, TrackedResourceSet.class);
@@ -459,7 +503,7 @@ public class TrsProviderHandler extends TRSTaskHandler {
         }
         ChangeLog trsChangeLog = extractChangeLogFromRdfModel(rdFModel);
         trs.setChangeLog(trsChangeLog);
-        logger.debug("finished extracting tracked resource set from rdf model");
+        log.debug("finished extracting tracked resource set from rdf model");
         return trs;
     }
 
@@ -472,12 +516,12 @@ public class TrsProviderHandler extends TRSTaskHandler {
      * @return change log pojo
      */
     protected ChangeLog extractChangeLogFromRdfModel(Model rdFModel) throws JenaModelException {
-        logger.debug("started extracting change log from rdf model");
-        Object[] changeLogs = null;
+        log.debug("started extracting change log from rdf model");
+        Object[] changeLogs;
 
-        Object[] modifications = null;
-        Object[] deletions = null;
-        Object[] creations = null;
+        Object[] modifications;
+        Object[] deletions;
+        Object[] creations;
 
         try {
             changeLogs = JenaModelHelper.fromJenaModel(rdFModel, ChangeLog.class);
@@ -508,7 +552,7 @@ public class TrsProviderHandler extends TRSTaskHandler {
         if (isNotEmpty(deletions)) {
             changeLog.getChange().addAll(Arrays.asList((Deletion[]) deletions));
         }
-        logger.debug("finished extracting change log set from rdf model");
+        log.debug("finished extracting change log set from rdf model");
         return changeLog;
     }
 
@@ -529,11 +573,11 @@ public class TrsProviderHandler extends TRSTaskHandler {
      * @return base pojo
      */
     protected Base extractBaseFromRdfModel(Model rdFModel) throws JenaModelException {
-        logger.debug("started extracting base from rdf model");
-        Page nextPage = null;
+        log.debug("started extracting base from rdf model");
+        Page nextPage;
         Base baseObj = null;
-        Object[] nextPageArray = new Object[0];
-        Object[] basesArray = new Object[0];
+        Object[] nextPageArray;
+        Object[] basesArray;
         try {
             nextPageArray = JenaModelHelper.fromJenaModel(rdFModel, Page.class);
             basesArray = JenaModelHelper.fromJenaModel(rdFModel, Base.class);
@@ -557,10 +601,10 @@ public class TrsProviderHandler extends TRSTaskHandler {
                 return null;
             }
             baseObj.setNextPage(nextPage);
-            logger.debug("finished extracting base from rdf model");
+            log.debug("finished extracting base from rdf model");
             return baseObj;
         }
-        logger.debug("finished extracting base from rdf model");
+        log.debug("finished extracting base from rdf model");
         return null;
     }
 

@@ -14,13 +14,13 @@
 
 package org.eclipse.lyo.oslc4j.trs.consumer.util;
 
+import com.google.common.base.Strings;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import jdk.internal.joptsimple.internal.Strings;
 
 /**
  * Created on 2018-02-27

@@ -24,7 +24,7 @@ import org.eclipse.lyo.core.trs.ChangeEvent;
 import org.eclipse.lyo.core.trs.Creation;
 import org.eclipse.lyo.core.trs.Deletion;
 import org.eclipse.lyo.core.trs.Modification;
-import org.eclipse.lyo.oslc4j.trs.consumer.TRSProvider.handler.TrsProviderHandler;
+import org.eclipse.lyo.oslc4j.trs.consumer.handlers.TrsProviderHandler;
 import org.eclipse.lyo.oslc4j.trs.consumer.util.TrsProviderConfiguration;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;

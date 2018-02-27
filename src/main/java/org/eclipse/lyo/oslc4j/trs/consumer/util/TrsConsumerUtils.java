@@ -16,17 +16,17 @@
 
 package org.eclipse.lyo.oslc4j.trs.consumer.util;
 
+import com.google.common.base.Strings;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import jdk.internal.joptsimple.internal.Strings;
 import net.oauth.OAuthException;
 import org.eclipse.lyo.oslc4j.trs.consumer.exceptions.RepresentationRetrievalException;
 import org.eclipse.lyo.oslc4j.trs.consumer.exceptions.ServerRollBackException;
-import org.eclipse.lyo.oslc4j.trs.consumer.TRSProvider.handler.ConcurrentTRSProviderHandler;
-import org.eclipse.lyo.oslc4j.trs.consumer.TRSProvider.handler.TrsProviderHandler;
+import org.eclipse.lyo.oslc4j.trs.consumer.handlers.ConcurrentTRSProviderHandler;
+import org.eclipse.lyo.oslc4j.trs.consumer.handlers.TrsProviderHandler;
 import org.eclipse.lyo.oslc4j.trs.consumer.exceptions.JenaModelException;
 import org.eclipse.lyo.oslc4j.trs.consumer.mqtt.MqttTrsEventListener;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -59,7 +59,7 @@ public class TrsConsumerUtils {
                     consumerConfig.getSparqlUsername(), consumerConfig.getSparqlPassword());
             providers.add(trsProvider);
             if (!Strings.isNullOrEmpty(cfg.getMqttBroker()) && !Strings.isNullOrEmpty(cfg.getMqttTopic())) {
-                // for now an HTTP  impl is still needed for MQTT
+                // for now an HTTP impl is still needed for MQTT
 
                 try {
                     // we actually need to wait here, but not in the listener

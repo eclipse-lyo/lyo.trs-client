@@ -31,7 +31,7 @@ import org.eclipse.lyo.core.trs.Deletion;
 import org.eclipse.lyo.core.trs.Modification;
 import org.eclipse.lyo.core.trs.Page;
 import org.eclipse.lyo.core.trs.TrackedResourceSet;
-import org.eclipse.lyo.oslc4j.trs.consumer.TRSProvider.handler.TrsProviderHandler;
+import org.eclipse.lyo.oslc4j.trs.consumer.handlers.TrsProviderHandler;
 import org.eclipse.lyo.oslc4j.trs.consumer.httpclient.TRSHttpClient;
 import org.junit.After;
 import org.junit.AfterClass;

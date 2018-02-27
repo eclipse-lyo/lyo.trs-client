@@ -16,7 +16,7 @@
 
   <build>
     <plugins>
-      <plugin>
+<!--      <plugin>
         <artifactId>maven-shade-plugin</artifactId>
         <version>3.1.0</version>
         <executions>
@@ -27,7 +27,19 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
+        <configuration>
+          <filters>
+            <filter>
+              <artifact>*:*</artifact>
+              <excludes>
+                <exclude>META-INF/*.SF</exclude>
+                <exclude>META-INF/*.DSA</exclude>
+                <exclude>META-INF/*.RSA</exclude>
+              </excludes>
+            </filter>
+          </filters>
+        </configuration>
+      </plugin>-->
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
@@ -67,24 +79,8 @@
     <dependency>
       <groupId>org.eclipse.paho</groupId>
       <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
-      <version>1.1.0</version>
+      <version>1.2.0</version>
     </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-      <version>2.6.4</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>2.6.4</version>
-    </dependency>
-    <dependency>
-      <groupId>org.json</groupId>
-      <artifactId>json</artifactId>
-      <version>20160810</version>
-    </dependency>
-
 
     <dependency>
       <!--BUG: requires servlet API for correct work (java.lang.NoClassDefFoundError: Ljavax/servlet/http/HttpServletRequest)-->

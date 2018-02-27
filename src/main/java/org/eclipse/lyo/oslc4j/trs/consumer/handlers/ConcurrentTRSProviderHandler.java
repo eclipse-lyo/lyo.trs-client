@@ -13,7 +13,7 @@
  * Andrew Berezovskyi  -  Lyo contribution updates
  */
 
-package org.eclipse.lyo.oslc4j.trs.consumer.TRSProvider.handler;
+package org.eclipse.lyo.oslc4j.trs.consumer.handlers;
 
 import java.io.IOException;
 import java.net.URI;
@@ -35,7 +35,7 @@ import org.eclipse.lyo.oslc4j.trs.consumer.exceptions.RepresentationRetrievalExc
 import org.eclipse.lyo.oslc4j.trs.consumer.exceptions.ServerRollBackException;
 import org.eclipse.lyo.oslc4j.trs.consumer.exceptions.JenaModelException;
 import org.eclipse.lyo.oslc4j.trs.consumer.httpclient.TRSHttpClient;
-import org.eclipse.lyo.oslc4j.trs.consumer.sparql.SparqlUtil;
+import org.eclipse.lyo.oslc4j.trs.consumer.util.SparqlUtil;
 
 /**
  * Specialization fothe TRS provider class which supports multithreading when it
