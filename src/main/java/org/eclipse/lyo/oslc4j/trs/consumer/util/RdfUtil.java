@@ -14,7 +14,7 @@
  * Omar Kacimi         -  Initial implementation
  * Andrew Berezovskyi  -  Lyo contribution updates
  */
-package org.eclipse.lyo.oslc4j.trs.consumer.rdf;
+package org.eclipse.lyo.oslc4j.trs.consumer.util;
 
 import java.io.IOException;
 import java.io.StringWriter;

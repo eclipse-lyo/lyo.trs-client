@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.PropertyConfigurator;
-import org.eclipse.lyo.oslc4j.trs.consumer.TRSProvider.handler.TrsProviderHandler;
+import org.eclipse.lyo.oslc4j.trs.consumer.handlers.TrsProviderHandler;
 import org.eclipse.lyo.oslc4j.trs.consumer.httpclient.TRSHttpClient;
 import org.eclipse.lyo.oslc4j.trs.consumer.util.TrsConfigurationLoader;
 import org.eclipse.lyo.oslc4j.trs.consumer.util.TrsConsumerConfiguration;
