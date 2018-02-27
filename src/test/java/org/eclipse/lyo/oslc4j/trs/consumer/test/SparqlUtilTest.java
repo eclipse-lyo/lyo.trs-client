@@ -1,16 +1,16 @@
 /**
  * Copyright (c) 2016-2017   KTH Royal Institute of Technology.
- *
+ * <p>
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * and Eclipse Distribution License v. 1.0 which accompanies this distribution.
- *
+ * <p>
  * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
  * and the Eclipse Distribution License is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
- *
+ * <p>
  * Contributors:
- *
+ * <p>
  * Omar Kacimi         -  Initial implementation
  * Andrew Berezovskyi  -  Lyo contribution updates
  */
@@ -21,16 +21,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.net.URL;
-
+import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.tdb.TDBLoader;
-import org.apache.jena.tdb.base.file.Location;
 import org.apache.jena.tdb.sys.TDBInternal;
 import org.apache.jena.update.UpdateAction;
 import org.apache.jena.update.UpdateFactory;
@@ -44,41 +42,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-
-import junit.framework.Assert;
-
 public class SparqlUtilTest {
 
     static Logger logger = Logger.getLogger(SparqlUtilTest.class);
 
     static Dataset dataset;
-
-    private static void clear() throws URISyntaxException {
-        dataset.begin(ReadWrite.WRITE);
-
-        String sparqlUpdate = "DROP ALL";
-        UpdateRequest updateReq = UpdateFactory.create(sparqlUpdate);
-        try {
-            UpdateAction.execute(updateReq, dataset);
-        } catch (Exception e) {
-            logger.error(e);
-        }
-        dataset.commit();
-        dataset.end();
-    }
-
-    private void executeUpdate(String sparqlUpdate) throws URISyntaxException {
-        dataset.begin(ReadWrite.WRITE);
-        UpdateRequest updateReq = UpdateFactory.create(sparqlUpdate);
-        try {
-            UpdateAction.execute(updateReq, dataset);
-        } catch (Exception e) {
-            logger.error(e);
-        }
-        dataset.commit();
-        dataset.end();
-
-    }
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -89,12 +57,12 @@ public class SparqlUtilTest {
     }
 
     @AfterClass
-    public static void tearDownAfterClass() throws Exception {
+    public static void tearDownAfterClass() {
         dataset.close();
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
 
         dataset.begin(ReadWrite.WRITE);
         URL elvisModel = SparqlUtilTest.class.getResource("/test_data_base/elvisimp.rdf");
@@ -130,15 +98,8 @@ public class SparqlUtilTest {
         }
         dataset.commit();
         dataset.end();
-        try {
-            String sparqlUpdate = SparqlUtil.getModificationEventQuery(graphName,
-                    defaultModelNTrip);
-            executeUpdate(sparqlUpdate);
-        } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            logger.error(e);
-            Assert.assertFalse(true);
-        }
+        String sparqlUpdate = SparqlUtil.getModificationEventQuery(graphName, defaultModelNTrip);
+        executeUpdate(sparqlUpdate);
         dataset.begin(ReadWrite.READ);
         Assert.assertTrue(dataset.containsNamedModel(graphName));
         dataset.commit();
@@ -160,31 +121,20 @@ public class SparqlUtilTest {
         }
         dataset.commit();
         dataset.end();
-        try {
-            String sparqlUpdate = SparqlUtil.getModificationEventQuery(graphName, defaultModelNTrip);
-            executeUpdate(sparqlUpdate);
-        } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            logger.error(e);
-            Assert.assertFalse(true);
-        }
+        String sparqlUpdate = SparqlUtil.getModificationEventQuery(graphName, defaultModelNTrip);
+        executeUpdate(sparqlUpdate);
         dataset.begin(ReadWrite.READ);
         Assert.assertTrue(dataset.containsNamedModel(graphName));
         dataset.commit();
         dataset.end();
-        try {
-            String sparqlUpdate = SparqlUtil.dropGraphQuery(graphName);
-            executeUpdate(sparqlUpdate);
-        } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            logger.error(e);
-            Assert.assertFalse(true);
-        }
+        String sparqlUpdateDrop = SparqlUtil.dropGraphQuery(graphName);
+        executeUpdate(sparqlUpdateDrop);
         dataset.begin(ReadWrite.READ);
         Assert.assertTrue(!dataset.containsNamedModel(graphName));
         dataset.commit();
         dataset.end();
     }
+
     //
     @Test
     public final void testRemoveAllTriplesInGraphQuery() {
@@ -201,26 +151,14 @@ public class SparqlUtilTest {
         }
         dataset.commit();
         dataset.end();
-        try {
-            String sparqlUpdate = SparqlUtil.getModificationEventQuery(graphName, defaultModelNTrip);
-            executeUpdate(sparqlUpdate);
-        } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            logger.error(e);
-            Assert.assertFalse(true);
-        }
+        String sparqlUpdate = SparqlUtil.getModificationEventQuery(graphName, defaultModelNTrip);
+        executeUpdate(sparqlUpdate);
         dataset.begin(ReadWrite.READ);
         Assert.assertTrue(dataset.containsNamedModel(graphName));
         dataset.commit();
         dataset.end();
-        try {
-            String sparqlUpdate = SparqlUtil.removeAllTriplesInGraphQuery(graphName);
-            executeUpdate(sparqlUpdate);
-        } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            logger.error(e);
-            Assert.assertFalse(true);
-        }
+        String clearGraphQuery = SparqlUtil.removeAllTriplesInGraphQuery(graphName);
+        executeUpdate(clearGraphQuery);
 
         dataset.begin(ReadWrite.READ);
         Assert.assertFalse(dataset.containsNamedModel(graphName));
@@ -243,25 +181,14 @@ public class SparqlUtilTest {
         }
         dataset.commit();
         dataset.end();
-        try {
-            String sparqlUpdate = SparqlUtil.getModificationEventQuery(graphName, defaultModelNTrip);
-            executeUpdate(sparqlUpdate);
-        } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            logger.error(e);
-            Assert.assertFalse(true);
-        }
+        String sparqlUpdate = SparqlUtil.getModificationEventQuery(graphName, defaultModelNTrip);
+        executeUpdate(sparqlUpdate);
 
-        String statement = "<http://www.w3.org/People/EM/contact#me> <http://www.w3.org/2000/10/swap/pim/contact#fullName> \"Eric Miller\" .";
+        String statement = "<http://www.w3.org/People/EM/contact#me> <http://www" +
+                ".w3.org/2000/10/swap/pim/contact#fullName> \"Eric Miller\" .";
 
-        try {
-            String sparqlUpdate = SparqlUtil.addTriplesToGraphQuery(graphName, statement);
-            executeUpdate(sparqlUpdate);
-        } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            logger.error(e);
-            Assert.assertFalse(true);
-        }
+        String addTriplesToGraphQuery = SparqlUtil.addTriplesToGraphQuery(graphName, statement);
+        executeUpdate(addTriplesToGraphQuery);
         dataset.begin(ReadWrite.READ);
         try {
             Model namedModel = dataset.getNamedModel(graphName);
@@ -273,7 +200,6 @@ public class SparqlUtilTest {
 
         dataset.commit();
         dataset.end();
-
     }
 
     @Test
@@ -291,15 +217,8 @@ public class SparqlUtilTest {
         }
         dataset.commit();
         dataset.end();
-        try {
-            String sparqlUpdate = SparqlUtil.getModificationEventQuery(graphName, defaultModelNTrip);
-            executeUpdate(sparqlUpdate);
-        } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            logger.error(e);
-            Assert.assertFalse(true);
-        }
-
+        String sparqlUpdate = SparqlUtil.getModificationEventQuery(graphName, defaultModelNTrip);
+        executeUpdate(sparqlUpdate);
 
         dataset.begin(ReadWrite.READ);
         try {
@@ -311,6 +230,33 @@ public class SparqlUtilTest {
             logger.error(e);
         }
 
+        dataset.commit();
+        dataset.end();
+    }
+
+    private void executeUpdate(String sparqlUpdate) {
+        dataset.begin(ReadWrite.WRITE);
+        UpdateRequest updateReq = UpdateFactory.create(sparqlUpdate);
+        try {
+            UpdateAction.execute(updateReq, dataset);
+        } catch (Exception e) {
+            logger.error(e);
+        }
+        dataset.commit();
+        dataset.end();
+
+    }
+
+    private static void clear() {
+        dataset.begin(ReadWrite.WRITE);
+
+        String sparqlUpdate = "DROP ALL";
+        UpdateRequest updateReq = UpdateFactory.create(sparqlUpdate);
+        try {
+            UpdateAction.execute(updateReq, dataset);
+        } catch (Exception e) {
+            logger.error(e);
+        }
         dataset.commit();
         dataset.end();
     }

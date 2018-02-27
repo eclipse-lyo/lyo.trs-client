@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2016-2017   KTH Royal Institute of Technology.
+/*
+ * Copyright (c) 2016-2018   KTH Royal Institute of Technology.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -107,14 +107,7 @@ public class ModelCreationUtil {
             String operatingSystem = os[rand.nextInt(os.length)];
             String platform = platforms[rand.nextInt(platforms.length)];
             String description = descriptions[rand.nextInt(descriptions.length)] + randomString;
-            try {
-                createBug(bc, summary, component, version, operatingSystem, platform, description, productId);
-            } catch (IOException e) {
-
-                logger.error(e);
-                ;
-            }
-
+            createBug(bc, summary, component, version, operatingSystem, platform, description, productId);
         }
 
     }
@@ -137,8 +130,7 @@ public class ModelCreationUtil {
     }
 
     public static String createBug(BugzillaConnector bc, String summary, String component, String version,
-            String operatingSystem, String platform, String description, final String productIdString)
-                    throws IOException, ServletException {
+            String operatingSystem, String platform, String description, final String productIdString) {
         String newBugId = null;
         try {
 

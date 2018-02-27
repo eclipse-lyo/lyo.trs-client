@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2016-2017   KTH Royal Institute of Technology.
  *
  * All rights reserved. This program and the accompanying materials
