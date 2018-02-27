@@ -44,7 +44,7 @@ import org.junit.Test;
 public class TRSProviderTest {
 
     @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
+    public static void setUpBeforeClass() {
         trsProvider = new TrsProviderHandler("", "", "", new TRSHttpClient(), "", "");
         trs = new TrackedResourceSet();
         cl_p1 = new ChangeLog();
@@ -83,11 +83,11 @@ public class TRSProviderTest {
     }
 
     @AfterClass
-    public static void tearDownAfterClass() throws Exception {
+    public static void tearDownAfterClass() {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         trsProvider = new TrsProviderHandler("", "", "", new TRSHttpClient(), "", "");
         trs = new TrackedResourceSet();
         cl_p1 = new ChangeLog();

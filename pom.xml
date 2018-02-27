@@ -68,6 +68,28 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.eclipse.paho</groupId>
+      <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+      <version>1.1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>2.6.4</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.6.4</version>
+    </dependency>
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20160810</version>
+    </dependency>
+
+
+    <dependency>
       <!--BUG: requires servlet API for correct work (java.lang.NoClassDefFoundError: Ljavax/servlet/http/HttpServletRequest)-->
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
