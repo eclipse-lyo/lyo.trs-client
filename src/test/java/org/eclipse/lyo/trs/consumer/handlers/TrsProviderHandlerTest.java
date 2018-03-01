@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2016-2017   KTH Royal Institute of Technology.
  *
  * All rights reserved. This program and the accompanying materials
@@ -21,7 +21,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.lyo.core.trs.Base;
 import org.eclipse.lyo.core.trs.ChangeEvent;
@@ -42,18 +41,7 @@ import org.junit.Test;
 
 public class TrsProviderHandlerTest {
 
-    @BeforeClass
-    public static void setUpBeforeClass() {
-        trsProvider = new TrsProviderHandler("", "", "", new TrsBasicAuthOslcClient(), "", "");
-        trs = new TrackedResourceSet();
-        cl_p1 = new ChangeLog();
-        cl_p2 = new ChangeLog();
-        creation = new Creation();
-        deletion = new Deletion();
-        modif = new Modification();
-        b_p1 = new Base();
-        b_p2 = new Base();
-    }
+    private static String uriPrefix = "https://host";
 
     @Before
     public void setUp() throws Exception {
@@ -85,18 +73,7 @@ public class TrsProviderHandlerTest {
     public static void tearDownAfterClass() {
     }
 
-    @After
-    public void tearDown() {
-        trsProvider = new TrsProviderHandler("", "", "", new TrsBasicAuthOslcClient(), "", "");
-        trs = new TrackedResourceSet();
-        cl_p1 = new ChangeLog();
-        cl_p2 = new ChangeLog();
-        creation = new Creation();
-        deletion = new Deletion();
-        modif = new Modification();
-        b_p1 = new Base();
-        b_p2 = new Base();
-    }
+    private static String ceUriPrefix = uriPrefix + "/changeEvents";
 
     @Test
     public final void testChangeLogContainsEvent() throws URISyntaxException {
@@ -106,26 +83,8 @@ public class TrsProviderHandlerTest {
         Assert.assertFalse(trsProvider.changeLogContainsEvent(uri, cl_p1));
     }
 
-    @Test
-    public final void testBaseChangeEventsOptimization() {
-        List<ChangeEvent> changeEventsList = new ArrayList<ChangeEvent>();
-        changeEventsList.add(creation);
-        changeEventsList.add(modif);
-
-        URI changedCreation = creation.getChanged();
-        URI changedModification = modif.getChanged();
-        URI changedDeletion = deletion.getChanged();
-
-        b_p1.getMembers().add(changedCreation);
-        b_p1.getMembers().add(changedModification);
-        b_p1.getMembers().add(changedDeletion);
-
-        trsProvider.baseChangeEventsOptimization(changeEventsList, b_p1.getMembers());
-
-        Assert.assertFalse(b_p1.getMembers().contains(changedCreation));
-        Assert.assertFalse(b_p1.getMembers().contains(changedModification));
-        Assert.assertTrue(b_p1.getMembers().contains(changedDeletion));
-    }
+    private static String bUriPrefix = uriPrefix + "/bases";
+    private static String clUriPrefix = uriPrefix + "/changeLogs";
 
     @Test
     public final void testOptimizedChangesList() throws URISyntaxException {
@@ -226,27 +185,7 @@ public class TrsProviderHandlerTest {
 
     }
 
-    private void initBase(Base base, URI previous) throws URISyntaxException {
-
-        base.setCutoffEvent(new URI(changeEventUri()));
-
-        List<URI> b_p1_members = new ArrayList<URI>();
-        b_p1_members.add(new URI(baseMemberUri()));
-        b_p1_members.add(new URI(baseMemberUri()));
-        b_p1_members.add(new URI(baseMemberUri()));
-        base.setMembers(b_p1_members);
-        Page ldp = new Page();
-        if (previous != null) {
-
-            ldp.setAbout(URI.create(bUriPrefix + "/" //$NON-NLS-1$
-                    + String.valueOf(baseNum)));// );
-            ldp.setPageOf(base);
-            ldp.setNextPage(previous);
-        } else
-            ldp.setNextPage(rdfNiluri);
-        base.setNextPage(ldp);
-
-    }
+    private static String trsUriPrefix = uriPrefix + "/trackedResourceSets";
 
     private void initChangeLog(ChangeLog cl, URI previous) throws URISyntaxException {
         List<ChangeEvent> changeEvents_p1 = new ArrayList<ChangeEvent>();
@@ -281,29 +220,136 @@ public class TrsProviderHandlerTest {
             e.printStackTrace();
         }
     }
-    static String uriPrefix = "https://host";
 
-    static String ceUriPrefix = uriPrefix + "/changeEvents";
+    private static int changeEventNum = 0;
+    private static int baseMemberNum = 0;
     static String bmUriPrefix = uriPrefix + "/baseMembers";
-    static String bUriPrefix = uriPrefix + "/bases";
+    private static int changeLogNum = 0;
+    private static int trackedResourceSetNum = 0;
+    private static int baseNum = 0;
+    private static TrackedResourceSet trs;
+    private static ChangeLog cl_p1;
+    private static ChangeLog cl_p2;
+    private static Creation creation;
+    private static Deletion deletion;
+    private static Modification modif;
+    private static Base b_p1;
+    private static Base b_p2;
+    private static TrsProviderHandler trsProvider;
 
-    static String clUriPrefix = uriPrefix + "/changeLogs";
-    static String trsUriPrefix = uriPrefix + "/trackedResourceSets";
+    @BeforeClass
+    public static void setUpBeforeClass() {
+        trsProvider = new TrsProviderHandler("",
+                "",
+                "",
+                new TrsBasicAuthOslcClient(),
+                null,
+                null,
+                null,
+                null
+        );
+        trs = new TrackedResourceSet();
+        cl_p1 = new ChangeLog();
+        cl_p2 = new ChangeLog();
+        creation = new Creation();
+        deletion = new Deletion();
+        modif = new Modification();
+        b_p1 = new Base();
+        b_p2 = new Base();
+    }
 
-    static int changeEventNum = 0;
-    static int baseMemberNum = 0;
-    static int changeLogNum = 0;
-    static int trackedResourceSetNum = 0;
-    static int baseNum = 0;
+    @After
+    public void tearDown() {
+        trsProvider = new TrsProviderHandler("",
+                "",
+                "",
+                new TrsBasicAuthOslcClient(),
+                null,
+                null,
+                null,
+                null
+        );
+        trs = new TrackedResourceSet();
+        cl_p1 = new ChangeLog();
+        cl_p2 = new ChangeLog();
+        creation = new Creation();
+        deletion = new Deletion();
+        modif = new Modification();
+        b_p1 = new Base();
+        b_p2 = new Base();
+    }
 
-    static TrackedResourceSet trs;
-    static ChangeLog cl_p1;
-    static ChangeLog cl_p2;
-    static Creation creation;
-    static Deletion deletion;
-    static Modification modif;
-    static Base b_p1;
-    static Base b_p2;
-    static TrsProviderHandler trsProvider;
+    @Test
+    public final void testBaseChangeEventsOptimization() {
+        List<ChangeEvent> changeEventsList = new ArrayList<>();
+        changeEventsList.add(creation);
+        changeEventsList.add(modif);
+
+        URI changedCreation = creation.getChanged();
+        URI changedModification = modif.getChanged();
+        URI changedDeletion = deletion.getChanged();
+
+        b_p1.getMembers().add(changedCreation);
+        b_p1.getMembers().add(changedModification);
+        b_p1.getMembers().add(changedDeletion);
+
+        trsProvider.baseChangeEventsOptimization(changeEventsList, b_p1.getMembers());
+
+        Assert.assertFalse(b_p1.getMembers().contains(changedCreation));
+        Assert.assertFalse(b_p1.getMembers().contains(changedModification));
+        Assert.assertTrue(b_p1.getMembers().contains(changedDeletion));
+    }
+
+    @Test
+    public final void testBaseChangeEventsOptimizationSafe() {
+        List<ChangeEvent> changeEventsList = new ArrayList<>();
+        changeEventsList.add(creation);
+        changeEventsList.add(modif);
+
+        URI changedCreation = creation.getChanged();
+        URI changedModification = modif.getChanged();
+        URI changedDeletion = deletion.getChanged();
+
+        b_p1.getMembers().add(changedCreation);
+        b_p1.getMembers().add(changedModification);
+        b_p1.getMembers().add(changedDeletion);
+
+        final List<URI> compressedMemberList = trsProvider.baseChangeEventsOptimizationSafe
+                (changeEventsList,
+                b_p1.getMembers()
+        );
+
+        Assert.assertTrue(b_p1.getMembers().contains(changedCreation));
+        Assert.assertFalse(compressedMemberList.contains(changedCreation));
+
+        Assert.assertTrue(b_p1.getMembers().contains(changedModification));
+        Assert.assertFalse(compressedMemberList.contains(changedModification));
+
+        Assert.assertTrue(b_p1.getMembers().contains(changedDeletion));
+        Assert.assertTrue(compressedMemberList.contains(changedDeletion));
+    }
+
+    private void initBase(Base base, URI previous) throws URISyntaxException {
+
+        base.setCutoffEvent(new URI(changeEventUri()));
+
+        List<URI> b_p1_members = new ArrayList<>();
+        b_p1_members.add(new URI(baseMemberUri()));
+        b_p1_members.add(new URI(baseMemberUri()));
+        b_p1_members.add(new URI(baseMemberUri()));
+        base.setMembers(b_p1_members);
+        Page ldp = new Page();
+        if (previous != null) {
+
+            ldp.setAbout(URI.create(bUriPrefix + "/" //$NON-NLS-1$
+                    + String.valueOf(baseNum)));// );
+            ldp.setPageOf(base);
+            ldp.setNextPage(previous);
+        } else {
+            ldp.setNextPage(rdfNiluri);
+        }
+        base.setNextPage(ldp);
+
+    }
 
 }

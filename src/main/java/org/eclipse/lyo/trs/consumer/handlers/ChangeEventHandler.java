@@ -18,17 +18,13 @@ package org.eclipse.lyo.trs.consumer.handlers;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
-
 import org.apache.jena.rdf.model.Model;
 import org.eclipse.lyo.core.trs.ChangeEvent;
 import org.eclipse.lyo.core.trs.Deletion;
-import org.eclipse.lyo.trs.consumer.util.TrsBasicAuthOslcClient;
 import org.eclipse.lyo.trs.consumer.util.SparqlUtil;
-
-import net.oauth.OAuthException;
+import org.eclipse.lyo.trs.consumer.util.TrsBasicAuthOslcClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +33,6 @@ import org.slf4j.LoggerFactory;
  * event
  *
  * @author Omar
- *
  */
 public class ChangeEventHandler extends TRSTaskHandler {
 
@@ -56,46 +51,62 @@ public class ChangeEventHandler extends TRSTaskHandler {
      */
     AtomicLong modelSize;
 
-    public ChangeEventHandler(TrsBasicAuthOslcClient oslcClient, String sparqlQueryService, String sparqlUpdateService,
-            String baseAuth_userName, String baseAuth_pwd, ChangeEvent handledChangeEvent, List<String> queries,
-            AtomicLong modelSize) {
-        super(oslcClient, sparqlQueryService, sparqlUpdateService, baseAuth_userName, baseAuth_pwd);
+    public ChangeEventHandler(TrsBasicAuthOslcClient oslcClient, String sparqlQueryService,
+            String sparqlUpdateService, String basicAuthUsername, String basicAuthPassword,
+            ChangeEvent handledChangeEvent, List<String> queries, AtomicLong modelSize) {
+        // here we assume the triplestore is not auth-protected, hence nulls
+        super(oslcClient,
+                sparqlUpdateService,
+                sparqlQueryService,
+                null,
+                null,
+                basicAuthUsername,
+                basicAuthPassword
+        );
         this.handledChangeEvent = handledChangeEvent;
-        threadName = "Change Event for resource: " + handledChangeEvent.getChanged() + " handler thread";
+//        threadName = "Change Event for resource: " + handledChangeEvent.getChanged() + "
+// handler " +
+//                "thread";
         this.queries = queries;
         this.modelSize = modelSize;
-    }
-
-    private void processChangeEvent() throws IOException, OAuthException, URISyntaxException {
-        URI changed = handledChangeEvent.getChanged();
-        logger.debug("creating query for resource " + changed.toString() + " change event ");
-        String query = "";
-        if (handledChangeEvent instanceof Deletion) {
-            query = SparqlUtil.getChangeEventQuery(handledChangeEvent, null);
-            queries.add(query.toString());
-        } else {
-
-            Model updatedResRepresentation = (Model) fetchTRSRemoteResource(changed.toString(), Model.class);
-            if (updatedResRepresentation != null) {
-                modelSize.set(modelSize.get() + updatedResRepresentation.size());
-                query = SparqlUtil.getChangeEventQuery(handledChangeEvent, updatedResRepresentation);
-                queries.add(query.toString());
-            } else {
-                logger.error("could not retrieve representation of member resource with uri: " + changed.toString());
-            }
-        }
-
-        logger.info("finished creating query for resource " + changed.toString() + " change event ");
     }
 
     @Override
     protected void processTRSTask() {
         try {
-            super.processTRSTask();
             processChangeEvent();
-        } catch (IOException | OAuthException | URISyntaxException e) {
+        } catch (IOException e) {
             logger.error("Error processing TRS task", e);
         }
+    }
+
+    private void processChangeEvent() throws IOException {
+        URI changed = handledChangeEvent.getChanged();
+        logger.debug("creating query for resource " + changed.toString() + " change event ");
+        String query;
+        if (handledChangeEvent instanceof Deletion) {
+            query = SparqlUtil.getChangeEventQuery(handledChangeEvent, null);
+            queries.add(query);
+        } else {
+
+            Model updatedResRepresentation = (Model) fetchTRSRemoteResource(changed.toString(),
+                    Model.class
+            );
+            if (updatedResRepresentation != null) {
+                modelSize.set(modelSize.get() + updatedResRepresentation.size());
+                query = SparqlUtil.getChangeEventQuery(handledChangeEvent,
+                        updatedResRepresentation
+                );
+                queries.add(query);
+            } else {
+                logger.error("could not retrieve representation of member resource with uri: " +
+                        changed
+                        .toString());
+            }
+        }
+
+        logger.info("finished creating query for resource " + changed.toString() + " change " +
+                "event" + " ");
     }
 
 }

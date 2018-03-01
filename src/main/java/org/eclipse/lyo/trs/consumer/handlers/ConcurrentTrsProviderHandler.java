@@ -28,16 +28,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import net.oauth.OAuthException;
 import org.eclipse.lyo.core.trs.Base;
 import org.eclipse.lyo.core.trs.ChangeEvent;
 import org.eclipse.lyo.core.trs.ChangeLog;
 import org.eclipse.lyo.core.trs.TrackedResourceSet;
+import org.eclipse.lyo.trs.consumer.exceptions.JenaModelException;
 import org.eclipse.lyo.trs.consumer.exceptions.RepresentationRetrievalException;
 import org.eclipse.lyo.trs.consumer.exceptions.ServerRollBackException;
-import org.eclipse.lyo.trs.consumer.exceptions.JenaModelException;
-import org.eclipse.lyo.trs.consumer.util.TrsBasicAuthOslcClient;
 import org.eclipse.lyo.trs.consumer.util.SparqlUtil;
+import org.eclipse.lyo.trs.consumer.util.TrsBasicAuthOslcClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,9 +53,10 @@ public class ConcurrentTrsProviderHandler extends TrsProviderHandler {
     private final static Logger log = LoggerFactory.getLogger(ConcurrentTrsProviderHandler.class);
 
     public ConcurrentTrsProviderHandler(String trsUriBase, String sparqlQueryService,
-            String sparqlUpdateService, TrsBasicAuthOslcClient trsHttpClient, String userName, String pwd,
-            String sparql_user, String sparql_pwd) {
-        super(trsUriBase,
+            String sparqlUpdateService, TrsBasicAuthOslcClient trsHttpClient, String userName,
+            String pwd, String sparql_user, String sparql_pwd) {
+        super(
+                trsUriBase,
                 sparqlQueryService,
                 sparqlUpdateService,
                 trsHttpClient,
@@ -68,15 +68,8 @@ public class ConcurrentTrsProviderHandler extends TrsProviderHandler {
 
     }
 
-//    public ConcurrentTrsProviderHandler(String trsUriBase, String sparqlQueryService,
-//            String sparqlUpdateService, TrsBasicAuthOslcClient trsHttpClient, String userName, String pwd) {
-//        super(trsUriBase, sparqlQueryService, sparqlUpdateService, trsHttpClient, userName, pwd);
-//
-//    }
-
     @Override
-    public void pollAndProcessChanges()
-            throws URISyntaxException, OAuthException, JenaModelException, IOException,
+    public void pollAndProcessChanges() throws URISyntaxException, JenaModelException, IOException,
             ServerRollBackException, RepresentationRetrievalException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         Date processingDateStart = new Date();
@@ -118,19 +111,17 @@ public class ConcurrentTrsProviderHandler extends TrsProviderHandler {
         changeHandlerExecutor = Executors.newCachedThreadPool();
 
         if (indexingStage) {
-            log.debug(
-                    "optimizing the list of base members against the change events to be " +
-                            "processed.");
-            baseChangeEventsOptimization(compressedChanges, baseMembers);
-            log.debug(
-                    "finished optimizing the list of base members against the change events to be" +
-                            " processed !");
-            log.debug(
-                    "Indexing stage. Base members creations will be be added to the list of " +
-                            "events to be processed.");
+            log.debug("optimizing the list of base members against the change events to be " +
+                    "processed.");
+            baseMembers = baseChangeEventsOptimizationSafe(compressedChanges, baseMembers);
+            log.debug("finished optimizing the list of base members against the change events to " +
+                    "" + "" + "" + "be" + " processed !");
+            log.debug("Indexing stage. Base members creations will be be added to the list of " +
+                    "events to be processed.");
 
             for (URI baseMemberUri : baseMembers) {
-                BaseMemberHandler baseMemberHandler = new BaseMemberHandler(oslcClient,
+                BaseMemberHandler baseMemberHandler = new BaseMemberHandler(
+                        oslcClient,
                         sparqlQueryService,
                         sparqlUpdateService,
                         baseAuth_userName,
@@ -144,7 +135,8 @@ public class ConcurrentTrsProviderHandler extends TrsProviderHandler {
         }
 
         for (ChangeEvent compressedChangeEvent : compressedChanges) {
-            ChangeEventHandler changeEventHandler = new ChangeEventHandler(oslcClient,
+            ChangeEventHandler changeEventHandler = new ChangeEventHandler(
+                    oslcClient,
                     sparqlQueryService,
                     sparqlUpdateService,
                     baseAuth_userName,
@@ -168,7 +160,7 @@ public class ConcurrentTrsProviderHandler extends TrsProviderHandler {
         }
 
         if (!queries.isEmpty()) {
-            queries.contains(null);
+//            queries.contains(null);
             if (queries.contains("")) {
                 lastProcessedChangeEventUri = null;
                 throw new RepresentationRetrievalException();
@@ -182,7 +174,8 @@ public class ConcurrentTrsProviderHandler extends TrsProviderHandler {
                 queriesStringBuilder.append("; \n");
             }
 
-            queriesStringBuilder.replace(queriesStringBuilder.lastIndexOf("; \n"),
+            queriesStringBuilder.replace(
+                    queriesStringBuilder.lastIndexOf("; \n"),
                     queriesStringBuilder.lastIndexOf("; \n") + 1,
                     ""
             );
@@ -194,7 +187,8 @@ public class ConcurrentTrsProviderHandler extends TrsProviderHandler {
             log.debug("a total of: " + modelSize + " triple . In the sparql update query");
             log.debug("sending Update SPARQL Query to server");
 
-            SparqlUtil.processQuery_sesame(finalQueryString,
+            SparqlUtil.processQuery_sesame(
+                    finalQueryString,
                     sparqlUpdateService,
                     sparql_baseAuth_userName,
                     sparql_baseAuth_pwd
@@ -205,111 +199,9 @@ public class ConcurrentTrsProviderHandler extends TrsProviderHandler {
         Date finishProcessingData = new Date();
 
         log.info("finished dealing with TRS Provider: " + trsUriBase);
-        log.debug("start dealing at: " + sdf.format(processingDateStart) + " . Finished dealing " +
-                "with provider at: " + sdf
+        log.debug("start dealing at: " + sdf.format(processingDateStart) + " . Finished dealing "
+                + "with provider at: " + sdf
                 .format(finishProcessingData));
 
     }
-
-/*    public void pollAndProcessChanges2() throws IOException, OAuthException, URISyntaxException,
-    ServerRollBackException, IllegalAccessException, IllegalArgumentException,
-    InstantiationException,
-    InvocationTargetException, SecurityException, NoSuchMethodException,
-    DatatypeConfigurationException,
-    OslcCoreApplicationException, RepresentationRetrievalException {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-        Date processingDateStart = new Date();
-
-        ExecutorService changeEventsAndBaseProcessingExecutor = null;
-
-        List<String> queries = new ArrayList<>();
-        AtomicLong modelSize = new AtomicLong(0);
-
-        changeEventsAndBaseProcessingExecutor = (ThreadPoolExecutor) Executors
-        .newCachedThreadPool();
-
-        log.info("started dealing with TRS Provider: " + trsUriBase);
-
-        TrackedResourceSet updatedTrs = extractRemoteTrs();
-        log.debug("Requesting changeLogs from Remote Server");
-
-        List<URI> baseMembers = new ArrayList<URI>();
-        boolean isIndexingStage = false;
-        if (lastProcessedChangeEventUri == null) {
-            log.debug("Indexing Stage.");
-            log.debug("Requesting Base members from remote server");
-            List<Base> bases = updateBases(updatedTrs);
-            log.debug("Base members retrieved !");
-            for (Base base : bases) {
-                baseMembers.addAll(base.getMembers());
-            }
-
-            lastProcessedChangeEventUri = bases.get(0).getCutoffEvent();
-            isIndexingStage = true;
-        }
-
-        List<ChangeLog> changeLogs = fetchUpdatedChangeLogs(updatedTrs);
-        log.debug("change Logs Retrieved ! ");
-        log.debug("Compressing the list of changes ! ");
-        List<ChangeEvent> compressedChanges = optimizedChangesList(changeLogs);
-        log.debug("Change list compressed ! ");
-
-        if (isIndexingStage)
-            indexingStage(compressedChanges, changeEventsAndBaseProcessingExecutor, queries,
-            modelSize, baseMembers);
-
-        log.debug("starting the processing of change events and base members creations");
-
-        log.debug("Creating necessary sparql update queries");
-
-        for (ChangeEvent compressedChangeEvent : compressedChanges) {
-            ChangeEventHandler changeEventHandler = new ChangeEventHandler(oslcClient,
-            sparqlQueryService,
-                    sparqlUpdateService, baseAuth_userName, baseAuth_pwd, compressedChangeEvent,
-                    queries, modelSize);
-            changeEventsAndBaseProcessingExecutor.execute(changeEventHandler);
-            lastProcessedChangeEventUri = compressedChangeEvent.getAbout();
-        }
-
-        changeEventsAndBaseProcessingExecutor.shutdown();
-
-        while (!changeEventsAndBaseProcessingExecutor.isTerminated()) {
-
-        }
-
-        if (!queries.isEmpty()) {
-            queries.contains(null);
-            if (queries.contains("")) {
-                lastProcessedChangeEventUri = null;
-                throw new RepresentationRetrievalException();
-            }
-            log.debug("number of processed queries: " + queries.size());
-            log.debug("finished Creating necessary sparql update queries");
-            StringBuilder queriesStringBuilder = new StringBuilder();
-
-            for (String query : queries) {
-                queriesStringBuilder.append(query);
-                queriesStringBuilder.append("; \n");
-            }
-
-            queriesStringBuilder.replace(queriesStringBuilder.lastIndexOf("; \n"),
-                    queriesStringBuilder.lastIndexOf("; \n") + 1, "");
-
-            String finalQueryString = queriesStringBuilder.toString();
-            log.debug(finalQueryString);
-            log.debug("a total of: " + modelSize + " triple . In the sparql update query");
-            log.debug("sending Update SPARQL Query to server");
-
-            SparqlUtil.processQuery_sesame(finalQueryString, sparqlUpdateService, sparql_baseAuth_userName,
-                    sparql_baseAuth_pwd);
-            log.debug("Update SPARQL Queries successful!");
-        }
-
-        Date finishProcessingData = new Date();
-
-        log.info("finished dealing with TRS Provider: " + trsUriBase);
-        log.debug("start dealing at: " + sdf.format(processingDateStart) + " . Finished dealing with provider at: "
-                + sdf.format(finishProcessingData));
-
-    }*/
 }
