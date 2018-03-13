@@ -16,15 +16,23 @@
 
 package org.eclipse.lyo.trs.consumer.mqtt;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
 import org.eclipse.lyo.core.trs.ChangeEvent;
 import org.eclipse.lyo.core.trs.Creation;
 import org.eclipse.lyo.core.trs.Deletion;
 import org.eclipse.lyo.core.trs.Modification;
+import org.eclipse.lyo.oslc4j.provider.jena.JenaModelHelper;
+import org.eclipse.lyo.oslc4j.provider.jena.LyoJenaModelException;
 import org.eclipse.lyo.trs.consumer.config.TrsProviderConfiguration;
 import org.eclipse.lyo.trs.consumer.handlers.TrsProviderHandler;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -64,46 +72,76 @@ public class MqttTrsEventListener implements MqttCallback {
             Runnable handleChangeEvent = new Runnable() {
                 public void run() {
                     log.info("Full ChangeEvent received");
-                    // read data from message
-                    String message = payload.substring(
-                            payload.indexOf("{") + 1,
-                            payload.indexOf("}"));
-                    String[] mapper = message.split(" ");
-                    int index_order = Arrays.asList(mapper).indexOf("@trs:order");
-                    int index_changed = Arrays.asList(mapper).indexOf("@trs:changed");
-                    int index_type = Arrays.asList(mapper).indexOf("@rdf:type");
-                    String about = mapper[0];
-                    String[] changed = mapper[index_changed + 1].split(";"); // changed[0]
-                    String[] order = mapper[index_order + 1].split("\""); // order[1]
-                    String type = mapper[index_type + 1];
-                    // create change event
-                    ChangeEvent changeEvent = null;
-                    final URI trackedResourceURI = URI.create(changed[0]);
-                    final int eventOrder = Integer.parseInt(order[1]);
-                    final URI eventURI = URI.create(about);
-                    if (type.matches("(.*)Creation(.*)")) {
-                        changeEvent = new Creation(eventURI, trackedResourceURI, eventOrder);
-                    }
-                    if (type.matches("(.*)Modification(.*)")) {
-                        changeEvent = new Modification(eventURI, trackedResourceURI, eventOrder);
-                    }
-                    if (type.matches("(.*)Deletion(.*)")) {
-                        changeEvent = new Deletion(eventURI, trackedResourceURI, eventOrder);
-                    }
-                    log.info(String.format(
-                            "New event: URI=%s; order=%d",
-                            trackedResourceURI,
-                            eventOrder));
-                    // update change log
                     try {
+                        // read data from message
+                        ChangeEvent changeEvent;
+                        if (payload.startsWith("<ModelCom")) {
+                            changeEvent = unmarshalChangeEventDirty(payload);
+                        } else {
+                            changeEvent = unmarshalChangeEvent(payload);
+                        }
+                        // update change log
                         providerHandler.processChangeEvent(changeEvent);
-                    } catch (IOException e) {
+                    } catch (IOException | LyoJenaModelException e) {
                         log.warn("Error processing event", e);
                     }
                 }
             };
             executorService.submit(handleChangeEvent);
         }
+    }
+
+    private ChangeEvent unmarshalChangeEvent(final String payload) throws LyoJenaModelException {
+        log.debug("MQTT payload: {}", payload);
+        ChangeEvent changeEvent = null;
+        final Model payloadModel = ModelFactory.createDefaultModel();
+        final ByteArrayInputStream inputStream = new ByteArrayInputStream(payload.getBytes(
+                StandardCharsets.UTF_8));
+        RDFDataMgr.read(payloadModel, inputStream, Lang.JSONLD);
+        try {
+            changeEvent = JenaModelHelper.unmarshalSingle(payloadModel, Modification.class);
+        } catch (LyoJenaModelException | IllegalArgumentException e) {
+            try {
+                changeEvent = JenaModelHelper.unmarshalSingle(payloadModel, Creation.class);
+            } catch (LyoJenaModelException | IllegalArgumentException e1) {
+                try {
+                    changeEvent = JenaModelHelper.unmarshalSingle(payloadModel, Deletion.class);
+                } catch (LyoJenaModelException | IllegalArgumentException e2) {
+                    log.error("Can't unmarshal the payload", e, e1, e2);
+                    throw e2;
+                }
+            }
+        }
+        log.info("Unmarshalled ChangeEvent: {}", changeEvent);
+        return changeEvent;
+    }
+
+    private ChangeEvent unmarshalChangeEventDirty(final String payload) {
+        ChangeEvent changeEvent = null;
+        String message = payload.substring(payload.indexOf("{") + 1, payload.indexOf("}"));
+        String[] mapper = message.split(" ");
+        int index_order = Arrays.asList(mapper).indexOf("@trs:order");
+        int index_changed = Arrays.asList(mapper).indexOf("@trs:changed");
+        int index_type = Arrays.asList(mapper).indexOf("@rdf:type");
+        String about = mapper[0];
+        String[] changed = mapper[index_changed + 1].split(";"); // changed[0]
+        String[] order = mapper[index_order + 1].split("\""); // order[1]
+        String type = mapper[index_type + 1];
+        // create change event
+        final URI trackedResourceURI = URI.create(changed[0]);
+        final int eventOrder = Integer.parseInt(order[1]);
+        final URI eventURI = URI.create(about);
+        if (type.matches("(.*)Creation(.*)")) {
+            changeEvent = new Creation(eventURI, trackedResourceURI, eventOrder);
+        }
+        if (type.matches("(.*)Modification(.*)")) {
+            changeEvent = new Modification(eventURI, trackedResourceURI, eventOrder);
+        }
+        if (type.matches("(.*)Deletion(.*)")) {
+            changeEvent = new Deletion(eventURI, trackedResourceURI, eventOrder);
+        }
+        log.info(String.format("New event: URI=%s; order=%d", trackedResourceURI, eventOrder));
+        return changeEvent;
     }
 
     public void deliveryComplete(IMqttDeliveryToken token) {
