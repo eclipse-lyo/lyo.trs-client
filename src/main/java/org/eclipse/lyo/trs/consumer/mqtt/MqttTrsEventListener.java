@@ -25,6 +25,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.eclipse.lyo.core.trs.ChangeEvent;
@@ -74,14 +76,20 @@ public class MqttTrsEventListener implements MqttCallback {
                     log.info("Full ChangeEvent received");
                     try {
                         // read data from message
-                        ChangeEvent changeEvent;
                         if (payload.startsWith("<ModelCom")) {
-                            changeEvent = unmarshalChangeEventDirty(payload);
+                            // TODO delete before the release, ppl should not see these horrors
+                            ChangeEvent changeEvent = unmarshalChangeEventDirty(payload);
+                            providerHandler.processChangeEvent(changeEvent);
                         } else {
-                            changeEvent = unmarshalChangeEvent(payload);
+                            final ChangeEventMessage eventMessage = unmarshalChangeEvent(payload);
+                            if (!eventMessage.isFat()) {
+                                // business as usual
+                                providerHandler.processChangeEvent(eventMessage.getChangeEvent());
+                            } else {
+                                providerHandler.processFatChangeEvent(eventMessage);
+                            }
                         }
                         // update change log
-                        providerHandler.processChangeEvent(changeEvent);
                     } catch (IOException | LyoJenaModelException e) {
                         log.warn("Error processing event", e);
                     }
@@ -91,9 +99,10 @@ public class MqttTrsEventListener implements MqttCallback {
         }
     }
 
-    private ChangeEvent unmarshalChangeEvent(final String payload) throws LyoJenaModelException {
+    private ChangeEventMessage unmarshalChangeEvent(final String payload)
+            throws LyoJenaModelException {
         log.debug("MQTT payload: {}", payload);
-        ChangeEvent changeEvent = null;
+        ChangeEvent changeEvent;
         final Model payloadModel = ModelFactory.createDefaultModel();
         final ByteArrayInputStream inputStream = new ByteArrayInputStream(payload.getBytes(
                 StandardCharsets.UTF_8));
@@ -112,8 +121,18 @@ public class MqttTrsEventListener implements MqttCallback {
                 }
             }
         }
-        log.info("Unmarshalled ChangeEvent: {}", changeEvent);
-        return changeEvent;
+
+        final URI tResourceUri = changeEvent.getChanged();
+        return new ChangeEventMessage(payloadModel,
+                                      changeEvent,
+                                      payloadModel.containsResource(r(tResourceUri)));
+    }
+
+    /**
+     * Dummy Jena Resource for a URI. Can be to do raw ops on a model.
+     */
+    private Resource r(final URI tResourceUri) {
+        return ResourceFactory.createResource(tResourceUri.toString());
     }
 
     private ChangeEvent unmarshalChangeEventDirty(final String payload) {

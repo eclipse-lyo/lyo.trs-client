@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.jena.rdf.model.Model;
 import org.eclipse.lyo.core.trs.ChangeEvent;
 import org.eclipse.lyo.core.trs.Deletion;
+import org.eclipse.lyo.trs.consumer.mqtt.ChangeEventMessage;
 import org.eclipse.lyo.trs.consumer.util.SparqlUtil;
 import org.eclipse.lyo.trs.consumer.util.TrsBasicAuthOslcClient;
 import org.slf4j.Logger;
@@ -69,6 +70,11 @@ public class ChangeEventHandler extends TRSTaskHandler {
 //                "thread";
         this.queries = queries;
         this.modelSize = modelSize;
+    }
+
+    @Override
+    public void processFatChangeEvent(final ChangeEventMessage eventMessage) {
+        throw new IllegalStateException("Not implemented yet");
     }
 
     @Override

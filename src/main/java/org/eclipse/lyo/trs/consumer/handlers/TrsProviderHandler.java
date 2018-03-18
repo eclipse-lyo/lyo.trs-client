@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import javax.xml.datatype.DatatypeConfigurationException;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.wink.client.ClientRuntimeException;
 import org.eclipse.lyo.core.trs.Base;
 import org.eclipse.lyo.core.trs.ChangeEvent;
 import org.eclipse.lyo.core.trs.ChangeLog;
@@ -46,6 +47,7 @@ import org.eclipse.lyo.oslc4j.provider.jena.JenaModelHelper;
 import org.eclipse.lyo.trs.consumer.exceptions.JenaModelException;
 import org.eclipse.lyo.trs.consumer.exceptions.RepresentationRetrievalException;
 import org.eclipse.lyo.trs.consumer.exceptions.ServerRollBackException;
+import org.eclipse.lyo.trs.consumer.mqtt.ChangeEventMessage;
 import org.eclipse.lyo.trs.consumer.util.ChangeEventComparator;
 import org.eclipse.lyo.trs.consumer.util.SparqlUtil;
 import org.eclipse.lyo.trs.consumer.util.TrsBasicAuthOslcClient;
@@ -115,6 +117,7 @@ public class TrsProviderHandler extends TRSTaskHandler {
 
         this.listener = listener;
     }
+
 
     /**
      * Implementation of the method inherited from the TRSTaskHandler class. a
@@ -239,6 +242,48 @@ public class TrsProviderHandler extends TRSTaskHandler {
         return false;
     }
 
+    @Override
+    public void processFatChangeEvent(final ChangeEventMessage eventMessage) {
+        final ChangeEvent changeEvent = eventMessage.getChangeEvent();
+        log.debug("Processing a fat ping for {}", changeEvent);
+
+        Model trsResourceModel = eventMessage.getMqttMessageModel();
+        updateTriplestore(changeEvent, trsResourceModel);
+        notifyListener(changeEvent, trsResourceModel);
+    }
+
+    /**
+     * This is not just a check for existence of the config string but switch between 2 modes.
+     * <p>
+     * Origi
+     *
+     * @return whether to mirror all TRS changes in the triplstore
+     */
+    private boolean sparqUpdateEnabled() {
+        return !Strings.isNullOrEmpty(sparqlUpdateService);
+    }
+
+    /**
+     * remove from the URI list the resources for which an event is already present in the change
+     * event list. Done to avoid processing base members uselessly
+     *
+     * @param compressedChangesList the optimized list of change events
+     * @param baseMembers           the members of the base
+     */
+    @Deprecated
+    protected void baseChangeEventsOptimization(List<ChangeEvent> compressedChangesList,
+            List<URI> baseMembers) {
+        for (ChangeEvent changeEvent : compressedChangesList) {
+            URI changedResource = changeEvent.getChanged();
+            if (baseMembers.contains(changedResource)) {
+                log.debug(
+                        "Removing '{}' from the base because it is already in the changelog",
+                        changeEvent);
+                baseMembers.remove(changedResource);
+            }
+        }
+    }
+
     /**
      * The main method for a TRS provider. This method consists on the periodic
      * process of processing the new change events since last time and the
@@ -251,7 +296,13 @@ public class TrsProviderHandler extends TRSTaskHandler {
 
         log.info("started dealing with TRS Provider: " + trsUriBase);
 
-        TrackedResourceSet updatedTrs = extractRemoteTrs();
+        TrackedResourceSet updatedTrs = null;
+        try {
+            updatedTrs = extractRemoteTrs();
+        } catch (ClientRuntimeException e) {
+            log.warn("Failed to connect to {}", trsUriBase);
+            return;
+        }
         boolean indexingStage = false;
         List<URI> baseMembers = new ArrayList<>();
 
@@ -310,9 +361,8 @@ public class TrsProviderHandler extends TRSTaskHandler {
                     if (sparqUpdateEnabled()) {
                         SparqlUtil.createGraph(graphName, sparqlUpdateService);
                         SparqlUtil.addTriplesToNamedGraph(baseResourceModel,
-                                graphName,
-                                sparqlUpdateService
-                        );
+                                                          graphName,
+                                                          sparqlUpdateService);
                     }
                     // FIXME Andrew@2018-02-28: figure out how to pass TRS base indexing event
                     // actually it is possible to generate a Creation event per resource in base!
@@ -340,40 +390,6 @@ public class TrsProviderHandler extends TRSTaskHandler {
     }
 
     /**
-     * This is not just a check for existence of the config string but switch between 2 modes.
-     * <p>
-     * Origi
-     *
-     * @return whether to mirror all TRS changes in the triplstore
-     */
-    private boolean sparqUpdateEnabled() {
-        return !Strings.isNullOrEmpty(sparqlUpdateService);
-    }
-
-    /**
-     * remove from the URI list the resources for which an event is already
-     * present in the change event list. Done to avoid processing base members
-     * uselessly
-     *
-     * @param compressedChangesList the optimized list of change events
-     * @param baseMembers           the members of the base
-     */
-    @Deprecated
-    protected void baseChangeEventsOptimization(List<ChangeEvent> compressedChangesList,
-            List<URI> baseMembers) {
-        for (ChangeEvent changeEvent : compressedChangesList) {
-            URI changedResource = changeEvent.getChanged();
-            if (baseMembers.contains(changedResource)) {
-                log.debug(
-                        "Removing '{}' from the base because it is already in the changelog",
-                        changeEvent
-                );
-                baseMembers.remove(changedResource);
-            }
-        }
-    }
-
-    /**
      * Create the necessary sparql update for processing the change events and
      * send it to the sparql update service
      *
@@ -388,21 +404,26 @@ public class TrsProviderHandler extends TRSTaskHandler {
             trsResourceModel = (Model) fetchTRSRemoteResource(changed.toString(), Model.class);
         }
 
+        updateTriplestore(changeEvent, trsResourceModel);
+        notifyListener(changeEvent, trsResourceModel);
+
+        log.info("finished processing resource " + changed.toString() + " change event ");
+    }
+
+    private void updateTriplestore(final ChangeEvent changeEvent, final Model trsResourceModel) {
         if (sparqUpdateEnabled()) {
             if (changeEvent instanceof Deletion) {
                 SparqlUtil.processChangeEvent(changeEvent, null, sparqlUpdateService);
             } else {
                 if (trsResourceModel != null) {
                     SparqlUtil.processChangeEvent(changeEvent,
-                            trsResourceModel,
-                            sparqlUpdateService
-                    );
+                                                  trsResourceModel,
+                                                  sparqlUpdateService);
                 }
             }
         }
-        notifyListener(changeEvent, trsResourceModel);
-
-        log.info("finished processing resource " + changed.toString() + " change event ");
+        // FIXME Andrew@2018-03-18: danger to skip over unprocessed base items
+        lastProcessedChangeEventUri = changeEvent.getAbout();
     }
 
     /**
@@ -531,8 +552,7 @@ public class TrsProviderHandler extends TRSTaskHandler {
      *
      * @return the TRS pojo extracted from the TRS rdf model
      */
-    private TrackedResourceSet extractTrsFromRdfModel(Model rdFModel)
-            throws JenaModelException, URISyntaxException {
+    private TrackedResourceSet extractTrsFromRdfModel(Model rdFModel) throws JenaModelException {
         log.debug("started extracting tracked resource set from rdf model");
         Object[] trackedResourceSets;
 
@@ -660,8 +680,7 @@ public class TrsProviderHandler extends TRSTaskHandler {
      *
      * @return trs pojo
      */
-    TrackedResourceSet extractRemoteTrs()
-            throws IOException, URISyntaxException, JenaModelException {
+    TrackedResourceSet extractRemoteTrs() throws IOException, JenaModelException {
         Model rdfModel = (Model) fetchTRSRemoteResource(trsUriBase, Model.class);
         return extractTrsFromRdfModel(rdfModel);
     }

@@ -63,17 +63,21 @@ public class TrsBasicAuthOslcClient extends JazzFormAuthClient {
 
         // TODO Andrew@2018-02-28: split into 2 methods: unmarshalling a resource and for a model
         if (AbstractResource.class.isAssignableFrom(objClass)) {
-            Object objToRet = null;
-            log.debug("getting entity of type: " + objClass.getName() + " for server reponse for " +
-                    "" + "" + "resource: " + url);
+            Object objToRet;
+            log.debug(
+                    "Getting entity of type '{}' for server response for resource '{}'",
+                    objClass.getName(),
+                    url);
             objToRet = clResp.getEntity(objClass);
-            log.debug("finished getting entity of type: " + objClass.getName() + " for server " +
-                    "reponse for resource: " + url);
+            log.debug(
+                    "Getting entity of type '{}' for server response for resource '{}'",
+                    objClass.getName(),
+                    url);
             clResp.consumeContent();
-            log.debug("finished consuming content from server response");
+            log.trace("Finished consuming content from server response");
             return objToRet;
         } else if (Model.class.isAssignableFrom(objClass)) {
-            log.debug("getting jena model for server reponse for resource: " + url);
+            log.debug("Getting jena model for server response for resource: " + url);
             return extractModelFromResponse(url, clResp);
         }
 
@@ -138,7 +142,7 @@ public class TrsBasicAuthOslcClient extends JazzFormAuthClient {
             return null;
         }
 
-        log.debug("Found entity of type String in the sever response for url: " + absoluteUrl +
+        log.trace("Found entity of type String in the sever response for url: " + absoluteUrl +
                 "" + ". Creating a Jena " + "Model and returning it.");
 
         final Model rdFModel = ModelFactory.createDefaultModel();
@@ -147,7 +151,7 @@ public class TrsBasicAuthOslcClient extends JazzFormAuthClient {
             rdFModel.read(is, null);
         }
 
-        log.debug("successful created Jena model from response for url: ." + absoluteUrl + " . "
+        log.trace("successful created Jena model from response for url: ." + absoluteUrl + " . "
                 + "Returning the response");
 
         if (!rdFModel.isEmpty()) {
