@@ -17,6 +17,7 @@
 package org.eclipse.lyo.trs.consumer.handlers;
 
 import java.io.IOException;
+import org.eclipse.lyo.trs.consumer.mqtt.ChangeEventMessage;
 import org.eclipse.lyo.trs.consumer.util.TrsBasicAuthOslcClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +61,8 @@ public abstract class TRSTaskHandler implements Runnable {
      * of code is executed in which thread in the logging output
      */
     protected String threadName;
+
+    public abstract void processFatChangeEvent(final ChangeEventMessage eventMessage);
 
     /**
      * retrieve the distant resource using basic authentication if necessary
