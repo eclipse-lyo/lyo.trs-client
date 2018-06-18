@@ -116,23 +116,6 @@
       <artifactId>oslc4j-core</artifactId>
       <version>${lyo.version}</version>
     </dependency>
-    <!--
-        <dependency>
-          <groupId>org.apache.jena</groupId>
-          <artifactId>jena-arq</artifactId>
-          <version>3.0.1</version>
-          <exclusions>
-            <exclusion>
-              <groupId>org.slf4j</groupId>
-              <artifactId>slf4j-log4j12</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>log4j</groupId>
-              <artifactId>log4j</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-    -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
@@ -159,24 +142,6 @@
       <artifactId>httpcore</artifactId>
       <version>4.4.5</version>
     </dependency>
-    <!--
-        <dependency>
-          <groupId>org.apache.jena</groupId>
-          <artifactId>jena-tdb</artifactId>
-          <version>3.0.1</version>
-          <scope>test</scope>
-          <exclusions>
-            <exclusion>
-              <groupId>org.slf4j</groupId>
-              <artifactId>slf4j-log4j12</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>log4j</groupId>
-              <artifactId>log4j</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-    -->
     <dependency>
       <!--Needed due to log4j:log4j exclusion-->
       <groupId>org.slf4j</groupId>
