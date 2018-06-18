@@ -19,10 +19,12 @@ package org.eclipse.lyo.trs.consumer.mqtt;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import net.oauth.OAuthException;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -90,7 +92,8 @@ public class MqttTrsEventListener implements MqttCallback {
                             }
                         }
                         // update change log
-                    } catch (IOException | LyoJenaModelException e) {
+                    } catch (IOException | LyoJenaModelException | OAuthException |
+                            URISyntaxException e) {
                         log.warn("Error processing event", e);
                     }
                 }

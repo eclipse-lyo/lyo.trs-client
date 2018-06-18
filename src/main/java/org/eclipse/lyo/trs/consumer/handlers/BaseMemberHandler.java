@@ -17,8 +17,10 @@
 package org.eclipse.lyo.trs.consumer.handlers;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import net.oauth.OAuthException;
 import org.apache.jena.rdf.model.Model;
 import org.eclipse.lyo.trs.consumer.mqtt.ChangeEventMessage;
 import org.eclipse.lyo.trs.consumer.util.SparqlUtil;
@@ -73,7 +75,7 @@ public class BaseMemberHandler extends TRSTaskHandler {
     protected void processTRSTask() {
         try {
             processBaseMemberAddition();
-        } catch (IOException e) {
+        } catch (IOException | OAuthException | URISyntaxException e) {
             logger.error("Error processing TRS task", e);
         }
     }
@@ -81,7 +83,8 @@ public class BaseMemberHandler extends TRSTaskHandler {
     /**
      * create the necessary sparql update for processing the base member
      */
-    private void processBaseMemberAddition() throws IOException {
+    private void processBaseMemberAddition()
+            throws IOException, OAuthException, URISyntaxException {
 
         logger.debug("processing base member " + baseMemberUri + " addition.  Creating necessary " +
                 "" + "" + "sparql update query ");

@@ -18,8 +18,10 @@ package org.eclipse.lyo.trs.consumer.handlers;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import net.oauth.OAuthException;
 import org.apache.jena.rdf.model.Model;
 import org.eclipse.lyo.core.trs.ChangeEvent;
 import org.eclipse.lyo.core.trs.Deletion;
@@ -81,12 +83,12 @@ public class ChangeEventHandler extends TRSTaskHandler {
     protected void processTRSTask() {
         try {
             processChangeEvent();
-        } catch (IOException e) {
+        } catch (IOException | OAuthException | URISyntaxException e) {
             logger.error("Error processing TRS task", e);
         }
     }
 
-    private void processChangeEvent() throws IOException {
+    private void processChangeEvent() throws IOException, OAuthException, URISyntaxException {
         URI changed = handledChangeEvent.getChanged();
         logger.debug("creating query for resource " + changed.toString() + " change event ");
         String query;
