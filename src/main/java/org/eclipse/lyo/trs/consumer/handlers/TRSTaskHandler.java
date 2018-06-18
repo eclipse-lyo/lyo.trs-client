@@ -17,6 +17,8 @@
 package org.eclipse.lyo.trs.consumer.handlers;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import net.oauth.OAuthException;
 import org.eclipse.lyo.trs.consumer.mqtt.ChangeEventMessage;
 import org.eclipse.lyo.trs.consumer.util.TrsBasicAuthOslcClient;
 import org.slf4j.Logger;
@@ -75,7 +77,8 @@ public abstract class TRSTaskHandler implements Runnable {
      * @return an instance of the required content type
      * @throws IOException
      */
-    protected Object fetchTRSRemoteResource(String url, Class<?> objClass) throws IOException {
+    protected Object fetchTRSRemoteResource(String url, Class<?> objClass)
+            throws IOException, OAuthException, URISyntaxException {
         return oslcClient.fetchResourceUsingBaseAuth(url, objClass, baseAuth_userName, baseAuth_pwd);
     }
 

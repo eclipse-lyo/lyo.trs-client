@@ -19,8 +19,10 @@ package org.eclipse.lyo.trs.consumer.util;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
+import net.oauth.OAuthException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -58,7 +60,7 @@ public class TrsBasicAuthOslcClient extends JazzFormAuthClient {
      * @param pwd      password for basic authentication
      */
     public Object fetchResourceUsingBaseAuth(String url, Class<?> objClass, String userName,
-            String pwd) throws IOException {
+            String pwd) throws IOException, OAuthException, URISyntaxException {
         ClientResponse clResp = fetchResourceUsingBasicAuth(url, userName, pwd);
 
         // TODO Andrew@2018-02-28: split into 2 methods: unmarshalling a resource and for a model
@@ -94,7 +96,8 @@ public class TrsBasicAuthOslcClient extends JazzFormAuthClient {
      *
      * @return the http response from the server
      */
-    public ClientResponse fetchResourceUsingBasicAuth(String url, String userName, String pwd) {
+    public ClientResponse fetchResourceUsingBasicAuth(String url, String userName, String pwd)
+            throws OAuthException, IOException, URISyntaxException {
         log.debug("sending GET request to retrieve: " + url + " using basic credentials, user: "
                 + userName);
         ClientResponse response = null;
