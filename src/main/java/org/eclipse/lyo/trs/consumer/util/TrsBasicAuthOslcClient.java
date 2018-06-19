@@ -139,14 +139,14 @@ public class TrsBasicAuthOslcClient extends JazzFormAuthClient {
         }
 
         final String responseAsString = clientResponse.getEntity(String.class);
+        log.trace("Response for {}:\n{}\n", absoluteUrl, responseAsString);
 
         if (responseAsString == null) {
             log.debug("The server response for url: " + absoluteUrl + " is null. Returning null");
             return null;
         }
 
-        log.trace("Found entity of type String in the sever response for url: " + absoluteUrl +
-                "" + ". Creating a Jena " + "Model and returning it.");
+        log.trace("Found entity of type String in the sever response for url: " + absoluteUrl + ". Creating a Jena Model and returning it.");
 
         final Model rdFModel = ModelFactory.createDefaultModel();
 
