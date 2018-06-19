@@ -607,26 +607,27 @@ public class TrsProviderHandler extends TRSTaskHandler {
             throw new JenaModelException(e);
         }
 
-        ChangeLog changeLog = null;
 
         if (isNotEmptySingletonArray(changeLogs) && changeLogs[0] instanceof ChangeLog) {
-            changeLog = (ChangeLog) changeLogs[0];
-        }
-        changeLog.getChange().clear();
+            ChangeLog changeLog = (ChangeLog) changeLogs[0];
+            changeLog.getChange().clear();
+            if (isNotEmpty(modifications)) {
+                changeLog.getChange().addAll(Arrays.asList((Modification[]) modifications));
+            }
 
-        if (isNotEmpty(modifications)) {
-            changeLog.getChange().addAll(Arrays.asList((Modification[]) modifications));
-        }
+            if (isNotEmpty(creations)) {
+                changeLog.getChange().addAll(Arrays.asList((Creation[]) creations));
+            }
 
-        if (isNotEmpty(creations)) {
-            changeLog.getChange().addAll(Arrays.asList((Creation[]) creations));
+            if (isNotEmpty(deletions)) {
+                changeLog.getChange().addAll(Arrays.asList((Deletion[]) deletions));
+            }
+            log.debug("finished extracting change log set from rdf model");
+            return changeLog;
+        } else {
+            log.warn("the change log was missing; returning an empty one");
+            return new ChangeLog();
         }
-
-        if (isNotEmpty(deletions)) {
-            changeLog.getChange().addAll(Arrays.asList((Deletion[]) deletions));
-        }
-        log.debug("finished extracting change log set from rdf model");
-        return changeLog;
     }
 
     private boolean isNotEmptySingletonArray(Object[] changeLogs) {
