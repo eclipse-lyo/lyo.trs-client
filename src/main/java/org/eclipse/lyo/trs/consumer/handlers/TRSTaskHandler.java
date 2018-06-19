@@ -19,6 +19,7 @@ package org.eclipse.lyo.trs.consumer.handlers;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import net.oauth.OAuthException;
+import org.eclipse.lyo.trs.consumer.exceptions.TrsEndpointException;
 import org.eclipse.lyo.trs.consumer.mqtt.ChangeEventMessage;
 import org.eclipse.lyo.trs.consumer.util.TrsBasicAuthOslcClient;
 import org.slf4j.Logger;
@@ -34,35 +35,35 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class TRSTaskHandler implements Runnable {
 
-    final static Logger logger = LoggerFactory.getLogger(TRSTaskHandler.class);
+    final static Logger log = LoggerFactory.getLogger(TRSTaskHandler.class);
     /**
      * instance of the http client used by this TRS Task handler to communicate
      * with the TRS providers
      */
-    protected TrsBasicAuthOslcClient oslcClient;
+    protected    TrsBasicAuthOslcClient oslcClient;
     /**
      * http sparql endpoints of the triplestore used to store the data
      */
-    protected String sparqlUpdateService;
-    protected String sparqlQueryService;
+    protected    String sparqlUpdateService;
+    protected    String sparqlQueryService;
     /**
      * http sparql endpoints of the triplestore used to store the data and to
      * query it by a task handler
      */
-    protected String sparql_baseAuth_userName;
-    protected String sparql_baseAuth_pwd;
+    protected    String sparql_baseAuth_userName;
+    protected    String sparql_baseAuth_pwd;
     /**
      * http sparql endpoints of the triplestore used to store the data
      */
-    protected String baseAuth_userName;
-    protected String baseAuth_pwd;
+    protected    String baseAuth_userName;
+    protected    String baseAuth_pwd;
     /**
      * this is used for logging purposes. Whenever the run method of the
      * Runnable is executed a check is done to see whether the name of the
      * current runnable is the same as this variable in order to know which bit
      * of code is executed in which thread in the logging output
      */
-    protected String threadName;
+    protected    String threadName;
 
     public abstract void processFatChangeEvent(final ChangeEventMessage eventMessage);
 
@@ -79,7 +80,15 @@ public abstract class TRSTaskHandler implements Runnable {
      */
     protected Object fetchTRSRemoteResource(String url, Class<?> objClass)
             throws IOException, OAuthException, URISyntaxException {
-        return oslcClient.fetchResourceUsingBaseAuth(url, objClass, baseAuth_userName, baseAuth_pwd);
+        try {
+            return oslcClient.fetchResourceUsingBaseAuth(
+                    url, objClass, baseAuth_userName, baseAuth_pwd);
+        } catch (TrsEndpointException e) {
+            log.error("The TRS endpoint {} is unreachable", url);
+            log.trace("TRS endpoint exception: {}", e);
+            // FIXME Andrew@2018-06-19: propagate the exception correctly to callers.
+            return null;
+        }
     }
 
 //    public TRSTaskHandler(TrsBasicAuthOslcClient oslcClient, String sparqlQueryService, String

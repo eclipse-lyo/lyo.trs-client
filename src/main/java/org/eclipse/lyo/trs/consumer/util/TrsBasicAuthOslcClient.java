@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
+import javax.ws.rs.core.Response;
 import net.oauth.OAuthException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.jena.rdf.model.Model;
@@ -29,6 +30,9 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.wink.client.ClientResponse;
 import org.eclipse.lyo.client.oslc.jazz.JazzFormAuthClient;
 import org.eclipse.lyo.oslc4j.core.model.AbstractResource;
+import org.eclipse.lyo.trs.consumer.exceptions.TrsEndpointConfigException;
+import org.eclipse.lyo.trs.consumer.exceptions.TrsEndpointErrorExpection;
+import org.eclipse.lyo.trs.consumer.exceptions.TrsEndpointException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,9 +64,16 @@ public class TrsBasicAuthOslcClient extends JazzFormAuthClient {
      * @param pwd      password for basic authentication
      */
     public Object fetchResourceUsingBaseAuth(String url, Class<?> objClass, String userName,
-            String pwd) throws IOException, OAuthException, URISyntaxException {
+            String pwd)
+            throws IOException, OAuthException, URISyntaxException, TrsEndpointException {
         ClientResponse clResp = fetchResourceUsingBasicAuth(url, userName, pwd);
 
+        final Response.Status.Family httpCodeType = clResp.getStatusType().getFamily();
+        if (httpCodeType.equals(Response.Status.Family.CLIENT_ERROR)) {
+            throw new TrsEndpointConfigException(clResp);
+        } else if (httpCodeType.equals(Response.Status.Family.SERVER_ERROR)) {
+            throw new TrsEndpointErrorExpection(clResp);
+        }
         // TODO Andrew@2018-02-28: split into 2 methods: unmarshalling a resource and for a model
         if (AbstractResource.class.isAssignableFrom(objClass)) {
             Object objToRet;
@@ -83,7 +94,7 @@ public class TrsBasicAuthOslcClient extends JazzFormAuthClient {
             return extractModelFromResponse(url, clResp);
         }
 
-        return null;
+        throw new IllegalStateException("The resources could not be fetched");
     }
 
     /**
