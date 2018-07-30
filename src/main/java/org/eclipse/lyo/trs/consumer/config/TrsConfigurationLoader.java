@@ -50,6 +50,6 @@ public class TrsConfigurationLoader {
         String broker = p.getProperty("mqtt_broker");
         String topic = p.getProperty("mqtt_topic");
 
-        return new TrsProviderConfiguration(uri, user, pass, broker, topic);
+        return new TrsProviderConfiguration(uri, user, pass, broker, topic, null);
     }
 }

@@ -14,6 +14,8 @@
 
 package org.eclipse.lyo.trs.consumer.config;
 
+import org.eclipse.paho.client.mqttv3.MqttClient;
+
 /**
  * Created on 2018-02-27
  *
@@ -27,14 +29,37 @@ public class TrsProviderConfiguration {
     private final String basicAuthPassword;
     private final String mqttBroker;
     private final String mqttTopic;
+    private final MqttClient mqttClient;
 
     public TrsProviderConfiguration(final String trsUri, final String basicAuthUsername, final String basicAuthPassword,
-            final String mqttBroker, final String mqttTopic) {
+            @Deprecated final String mqttBroker, final String mqttTopic,
+            final MqttClient mqttClient) {
         this.trsUri = trsUri;
+
         this.basicAuthUsername = basicAuthUsername;
         this.basicAuthPassword = basicAuthPassword;
         this.mqttBroker = mqttBroker;
         this.mqttTopic = mqttTopic;
+        this.mqttClient = mqttClient;
+    }
+
+    public static TrsProviderConfiguration forHttp(final String trsEndpointUri) {
+        return new TrsProviderConfiguration(trsEndpointUri, null, null, null, null, null);
+    }
+
+    public static TrsProviderConfiguration forHttpWithBasicAuth(final String trsEndpointUri,
+            final String trsEndpointUsername, final String trsEndpointPassword) {
+        return new TrsProviderConfiguration(trsEndpointUri, trsEndpointUsername,
+                                            trsEndpointPassword, null, null, null
+        );
+    }
+
+    public static TrsProviderConfiguration forMQTT(MqttClient client, String topic) {
+        return new TrsProviderConfiguration(null, null, null, null, topic, client);
+    }
+
+    public MqttClient getMqttClient() {
+        return mqttClient;
     }
 
     public String getTrsUri() {
@@ -49,6 +74,7 @@ public class TrsProviderConfiguration {
         return basicAuthPassword;
     }
 
+    @Deprecated
     public String getMqttBroker() {
         return mqttBroker;
     }
