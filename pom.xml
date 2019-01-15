@@ -45,12 +45,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.eclipse.paho</groupId>
-      <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
-      <version>1.2.0</version>
-    </dependency>
-
-    <dependency>
       <!--BUG: requires servlet API for correct work (java.lang.NoClassDefFoundError: Ljavax/servlet/http/HttpServletRequest)-->
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
