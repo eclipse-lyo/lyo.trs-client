@@ -39,7 +39,6 @@ public class TRSScheduledExecutorService extends ScheduledThreadPoolExecutor {
 
     public TRSScheduledExecutorService(int corePoolSize) {
         super(corePoolSize);
-        // TODO Auto-generated constructor stub
     }
 
     public TRSScheduledExecutorService(int corePoolSize, ThreadFactory tf) {

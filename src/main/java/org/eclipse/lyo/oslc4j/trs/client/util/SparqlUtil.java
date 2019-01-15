@@ -22,7 +22,6 @@ import org.apache.jena.update.UpdateExecutionFactory;
 import org.apache.jena.update.UpdateFactory;
 import org.apache.jena.update.UpdateProcessor;
 import org.apache.jena.update.UpdateRequest;
-import org.apache.log4j.Logger;
 import org.eclipse.lyo.core.trs.ChangeEvent;
 import org.eclipse.lyo.core.trs.Creation;
 import org.eclipse.lyo.core.trs.Deletion;
@@ -32,6 +31,8 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.Update;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sparql.SPARQLRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // FIXME Andrew@2018-02-26: why RDF4J here?
 
@@ -47,7 +48,7 @@ import org.openrdf.repository.sparql.SPARQLRepository;
  */
 public class SparqlUtil {
 
-    static Logger logger = Logger.getLogger(SparqlUtil.class);
+    static Logger logger = LoggerFactory.getLogger(SparqlUtil.class);
 
     /**
      * returns the sparql query for the creation of the named graph with the
@@ -111,7 +112,7 @@ public class SparqlUtil {
             String nTripleRepresentation = RdfUtil.modelToNTriple(jenaModel);
             return addTriplesToGraphQuery(namedGraphUrl, nTripleRepresentation);
         } catch (IOException e) {
-            logger.error(e);
+            logger.error("Cannot append triples from the model to the query", e);
             return null;
         }
     }

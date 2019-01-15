@@ -73,15 +73,6 @@ public class ChangeEventHandler extends TRSTaskHandler {
         this.modelSize = modelSize;
     }
 
-    @Override
-    protected void processTRSTask() {
-        try {
-            processChangeEvent();
-        } catch (IOException | OAuthException | URISyntaxException e) {
-            logger.error("Error processing TRS task", e);
-        }
-    }
-
     private void processChangeEvent() throws IOException, OAuthException, URISyntaxException {
         URI changed = handledChangeEvent.getChanged();
         logger.debug("creating query for resource " + changed.toString() + " change event ");
@@ -107,8 +98,16 @@ public class ChangeEventHandler extends TRSTaskHandler {
             }
         }
 
-        logger.info("finished creating query for resource " + changed.toString() + " change " +
-                "event" + " ");
+        logger.info("finished creating query for resource " + changed.toString() + " change event ");
+    }
+
+    @Override
+    protected void processTRSTask() {
+        try {
+            processChangeEvent();
+        } catch (IOException | OAuthException | URISyntaxException e) {
+            logger.error("Error processing Change Events", e);
+        }
     }
 
 }

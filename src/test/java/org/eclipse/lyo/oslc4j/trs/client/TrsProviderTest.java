@@ -31,7 +31,6 @@ import org.eclipse.lyo.core.trs.Modification;
 import org.eclipse.lyo.core.trs.Page;
 import org.eclipse.lyo.core.trs.TrackedResourceSet;
 import org.eclipse.lyo.oslc4j.trs.client.handlers.TrsProviderHandler;
-import org.eclipse.lyo.oslc4j.trs.client.httpclient.TRSHttpClient;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
