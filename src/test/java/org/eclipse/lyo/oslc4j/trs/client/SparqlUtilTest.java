@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2016-2017   KTH Royal Institute of Technology.
  *
  * All rights reserved. This program and the accompanying materials
@@ -14,16 +14,14 @@
  * Omar Kacimi         -  Initial implementation
  * Andrew Berezovskyi  -  Lyo contribution updates
  */
-package org.eclipse.lyo.oslc4j.trs.client.test;
+package org.eclipse.lyo.oslc4j.trs.client;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.net.URL;
-import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ReadWrite;
@@ -34,50 +32,26 @@ import org.apache.jena.tdb.sys.TDBInternal;
 import org.apache.jena.update.UpdateAction;
 import org.apache.jena.update.UpdateFactory;
 import org.apache.jena.update.UpdateRequest;
-import org.apache.log4j.Logger;
-import org.eclipse.lyo.oslc4j.trs.client.rdf.RdfUtil;
-import org.eclipse.lyo.oslc4j.trs.client.sparql.SparqlUtil;
+import org.eclipse.lyo.oslc4j.trs.client.util.RdfUtil;
+import org.eclipse.lyo.oslc4j.trs.client.util.SparqlUtil;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.junit.Assert.*;
 
 public class SparqlUtilTest {
 
-    static Logger logger = Logger.getLogger(SparqlUtilTest.class);
+    private static Logger logger = LoggerFactory.getLogger(SparqlUtilTest.class);
 
-    static Dataset dataset;
-
-    private static void clear() throws URISyntaxException {
-        dataset.begin(ReadWrite.WRITE);
-
-        String sparqlUpdate = "DROP ALL";
-        UpdateRequest updateReq = UpdateFactory.create(sparqlUpdate);
-        try {
-            UpdateAction.execute(updateReq, dataset);
-        } catch (Exception e) {
-            logger.error(e);
-        }
-        dataset.commit();
-        dataset.end();
-    }
-
-    private void executeUpdate(String sparqlUpdate) throws URISyntaxException {
-        dataset.begin(ReadWrite.WRITE);
-        UpdateRequest updateReq = UpdateFactory.create(sparqlUpdate);
-        try {
-            UpdateAction.execute(updateReq, dataset);
-        } catch (Exception e) {
-            logger.error(e);
-        }
-        dataset.commit();
-        dataset.end();
-
-    }
+    private static Dataset dataset;
 
     @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
+    public static void setUpBeforeClass() {
         String dataSetPath = SparqlUtilTest.class.getResource("/test_data_base/test_data_set").getFile();
 //        Location directory = Location.create(dataSetPath);
         dataset = TDBFactory.createDataset(dataSetPath);
@@ -85,12 +59,12 @@ public class SparqlUtilTest {
     }
 
     @AfterClass
-    public static void tearDownAfterClass() throws Exception {
+    public static void tearDownAfterClass() {
         dataset.close();
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
 
         dataset.begin(ReadWrite.WRITE);
         URL elvisModel = SparqlUtilTest.class.getResource("/test_data_base/elvisimp.rdf");
@@ -107,7 +81,7 @@ public class SparqlUtilTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         clear();
     }
 
@@ -120,23 +94,15 @@ public class SparqlUtilTest {
         try {
             defaultModelNTrip = RdfUtil.modelToNTriple(defaultModel);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            logger.error(e);
-            Assert.assertFalse(true);
+            logger.error("Error marshalling the model", e);
+            assertFalse(true);
         }
         dataset.commit();
         dataset.end();
-        try {
-            String sparqlUpdate = SparqlUtil.getModificationEventQuery(graphName,
-                    defaultModelNTrip);
-            executeUpdate(sparqlUpdate);
-        } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            logger.error(e);
-            Assert.assertFalse(true);
-        }
+        String sparqlUpdate = SparqlUtil.getModificationEventQuery(graphName, defaultModelNTrip);
+        executeUpdate(sparqlUpdate);
         dataset.begin(ReadWrite.READ);
-        Assert.assertTrue(dataset.containsNamedModel(graphName));
+        assertTrue(dataset.containsNamedModel(graphName));
         dataset.commit();
         dataset.end();
     }
@@ -150,37 +116,25 @@ public class SparqlUtilTest {
         try {
             defaultModelNTrip = RdfUtil.modelToNTriple(defaultModel);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            logger.error(e);
-            Assert.assertFalse(true);
+            logger.error("Error marshalling the model", e);
+            assertFalse(true);
         }
         dataset.commit();
         dataset.end();
-        try {
-            String sparqlUpdate = SparqlUtil.getModificationEventQuery(graphName, defaultModelNTrip);
-            executeUpdate(sparqlUpdate);
-        } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            logger.error(e);
-            Assert.assertFalse(true);
-        }
+        String sparqlUpdate = SparqlUtil.getModificationEventQuery(graphName, defaultModelNTrip);
+        executeUpdate(sparqlUpdate);
         dataset.begin(ReadWrite.READ);
-        Assert.assertTrue(dataset.containsNamedModel(graphName));
+        assertTrue(dataset.containsNamedModel(graphName));
         dataset.commit();
         dataset.end();
-        try {
-            String sparqlUpdate = SparqlUtil.dropGraphQuery(graphName);
-            executeUpdate(sparqlUpdate);
-        } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            logger.error(e);
-            Assert.assertFalse(true);
-        }
+        String sparqlUpdateDrop = SparqlUtil.dropGraphQuery(graphName);
+        executeUpdate(sparqlUpdateDrop);
         dataset.begin(ReadWrite.READ);
-        Assert.assertTrue(!dataset.containsNamedModel(graphName));
+        assertTrue(!dataset.containsNamedModel(graphName));
         dataset.commit();
         dataset.end();
     }
+
     //
     @Test
     public final void testRemoveAllTriplesInGraphQuery() {
@@ -191,35 +145,22 @@ public class SparqlUtilTest {
         try {
             defaultModelNTrip = RdfUtil.modelToNTriple(defaultModel);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            logger.error(e);
-            Assert.assertFalse(true);
+            logger.error("Error marshalling the model", e);
+            assertFalse(true);
         }
         dataset.commit();
         dataset.end();
-        try {
-            String sparqlUpdate = SparqlUtil.getModificationEventQuery(graphName, defaultModelNTrip);
-            executeUpdate(sparqlUpdate);
-        } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            logger.error(e);
-            Assert.assertFalse(true);
-        }
+        String sparqlUpdate = SparqlUtil.getModificationEventQuery(graphName, defaultModelNTrip);
+        executeUpdate(sparqlUpdate);
         dataset.begin(ReadWrite.READ);
-        Assert.assertTrue(dataset.containsNamedModel(graphName));
+        assertTrue(dataset.containsNamedModel(graphName));
         dataset.commit();
         dataset.end();
-        try {
-            String sparqlUpdate = SparqlUtil.removeAllTriplesInGraphQuery(graphName);
-            executeUpdate(sparqlUpdate);
-        } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            logger.error(e);
-            Assert.assertFalse(true);
-        }
+        String clearGraphQuery = SparqlUtil.removeAllTriplesInGraphQuery(graphName);
+        executeUpdate(clearGraphQuery);
 
         dataset.begin(ReadWrite.READ);
-        Assert.assertFalse(dataset.containsNamedModel(graphName));
+        assertFalse(dataset.containsNamedModel(graphName));
         dataset.commit();
         dataset.end();
     }
@@ -233,43 +174,30 @@ public class SparqlUtilTest {
         try {
             defaultModelNTrip = RdfUtil.modelToNTriple(defaultModel);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            logger.error(e);
-            Assert.assertFalse(true);
+            logger.error("Error marshalling the model", e);
+            assertFalse(true);
         }
         dataset.commit();
         dataset.end();
-        try {
-            String sparqlUpdate = SparqlUtil.getModificationEventQuery(graphName, defaultModelNTrip);
-            executeUpdate(sparqlUpdate);
-        } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            logger.error(e);
-            Assert.assertFalse(true);
-        }
+        String sparqlUpdate = SparqlUtil.getModificationEventQuery(graphName, defaultModelNTrip);
+        executeUpdate(sparqlUpdate);
 
-        String statement = "<http://www.w3.org/People/EM/contact#me> <http://www.w3.org/2000/10/swap/pim/contact#fullName> \"Eric Miller\" .";
+        String statement = "<http://www.w3.org/People/EM/contact#me> <http://www" +
+                ".w3.org/2000/10/swap/pim/contact#fullName> \"Eric Miller\" .";
 
-        try {
-            String sparqlUpdate = SparqlUtil.addTriplesToGraphQuery(graphName, statement);
-            executeUpdate(sparqlUpdate);
-        } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            logger.error(e);
-            Assert.assertFalse(true);
-        }
+        String addTriplesToGraphQuery = SparqlUtil.addTriplesToGraphQuery(graphName, statement);
+        executeUpdate(addTriplesToGraphQuery);
         dataset.begin(ReadWrite.READ);
         try {
             Model namedModel = dataset.getNamedModel(graphName);
             String namedModelNtriples = RdfUtil.modelToNTriple(namedModel);
-            Assert.assertTrue(namedModelNtriples.contains(statement));
+            assertTrue(namedModelNtriples.contains(statement));
         } catch (IOException e) {
-            logger.error(e);
+            logger.error("Error marshalling the model", e);
         }
 
         dataset.commit();
         dataset.end();
-
     }
 
     @Test
@@ -281,32 +209,51 @@ public class SparqlUtilTest {
         try {
             defaultModelNTrip = RdfUtil.modelToNTriple(defaultModel);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            logger.error(e);
-            Assert.assertFalse(true);
+            logger.error("Error marshalling the model", e);
+            assertFalse(true);
         }
         dataset.commit();
         dataset.end();
-        try {
-            String sparqlUpdate = SparqlUtil.getModificationEventQuery(graphName, defaultModelNTrip);
-            executeUpdate(sparqlUpdate);
-        } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            logger.error(e);
-            Assert.assertFalse(true);
-        }
-
+        String sparqlUpdate = SparqlUtil.getModificationEventQuery(graphName, defaultModelNTrip);
+        executeUpdate(sparqlUpdate);
 
         dataset.begin(ReadWrite.READ);
         try {
             Model namedModel = dataset.getNamedModel(graphName);
             String namedModelNtriples = RdfUtil.modelToNTriple(namedModel);
-            Assert.assertTrue(dataset.containsNamedModel(graphName));
-            Assert.assertTrue(namedModelNtriples.equals(defaultModelNTrip));
+            assertTrue(dataset.containsNamedModel(graphName));
+            assertTrue(namedModelNtriples.equals(defaultModelNTrip));
         } catch (IOException e) {
-            logger.error(e);
+            logger.error("Error marshalling the model", e);
         }
 
+        dataset.commit();
+        dataset.end();
+    }
+
+    private void executeUpdate(String sparqlUpdate) {
+        dataset.begin(ReadWrite.WRITE);
+        UpdateRequest updateReq = UpdateFactory.create(sparqlUpdate);
+        try {
+            UpdateAction.execute(updateReq, dataset);
+        } catch (Exception e) {
+            logger.error("Error updating the triplestore", e);
+        }
+        dataset.commit();
+        dataset.end();
+
+    }
+
+    private static void clear() {
+        dataset.begin(ReadWrite.WRITE);
+
+        String sparqlUpdate = "DROP ALL";
+        UpdateRequest updateReq = UpdateFactory.create(sparqlUpdate);
+        try {
+            UpdateAction.execute(updateReq, dataset);
+        } catch (Exception e) {
+            logger.error("Error clearing the triplestore", e);
+        }
         dataset.commit();
         dataset.end();
     }
