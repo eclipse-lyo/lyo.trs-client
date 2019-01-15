@@ -14,7 +14,7 @@
  * Omar Kacimi         -  Initial implementation
  * Andrew Berezovskyi  -  Lyo contribution updates
  */
-package org.eclipse.lyo.oslc4j.trs.client.sparql;
+package org.eclipse.lyo.oslc4j.trs.client.util;
 
 import java.io.IOException;
 import org.apache.jena.rdf.model.Model;
@@ -27,7 +27,6 @@ import org.eclipse.lyo.core.trs.ChangeEvent;
 import org.eclipse.lyo.core.trs.Creation;
 import org.eclipse.lyo.core.trs.Deletion;
 import org.eclipse.lyo.core.trs.Modification;
-import org.eclipse.lyo.oslc4j.trs.client.rdf.RdfUtil;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.Update;

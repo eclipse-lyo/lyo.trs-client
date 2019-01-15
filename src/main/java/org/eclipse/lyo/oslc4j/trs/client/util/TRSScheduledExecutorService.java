@@ -14,14 +14,16 @@
  * Omar Kacimi         -  Initial implementation
  * Andrew Berezovskyi  -  Lyo contribution updates
  */
-package org.eclipse.lyo.oslc4j.trs.client.concurrent;
+package org.eclipse.lyo.oslc4j.trs.client.util;
 
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
-import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A specialization of the ScheduledThreadPoolExecutor propagating the
@@ -33,7 +35,7 @@ import org.apache.log4j.Logger;
  */
 public class TRSScheduledExecutorService extends ScheduledThreadPoolExecutor {
 
-    final static Logger logger = Logger.getLogger(TRSScheduledExecutorService.class);
+    final static Logger logger = LoggerFactory.getLogger(TRSScheduledExecutorService.class);
 
     public TRSScheduledExecutorService(int corePoolSize) {
         super(corePoolSize);
@@ -62,7 +64,7 @@ public class TRSScheduledExecutorService extends ScheduledThreadPoolExecutor {
             }
         }
         if (t != null) {
-            logger.error(t);
+            logger.error("Non-empty throwable after execution", t);
         }
     }
 }
