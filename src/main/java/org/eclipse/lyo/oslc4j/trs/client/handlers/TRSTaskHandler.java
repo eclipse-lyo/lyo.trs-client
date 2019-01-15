@@ -83,21 +83,10 @@ public abstract class TRSTaskHandler implements Runnable {
         } catch (TrsEndpointException e) {
             log.error("The TRS endpoint {} is unreachable", url);
             log.trace("TRS endpoint exception: {}", e);
-            // FIXME Andrew@2018-06-19: propagate the exception correctly to callers.
+            // TODO Andrew@2018-06-19: propagate the exception correctly to callers.
             return null;
         }
     }
-
-//    public TRSTaskHandler(TrsBasicAuthOslcClient oslcClient, String sparqlQueryService, String
-// sparqlUpdateService,
-//            String baseAuth_userName, String baseAuth_pwd) {
-//        super();
-//        this.oslcClient = oslcClient;
-//        this.sparqlUpdateService = sparqlUpdateService;
-//        this.sparqlQueryService = sparqlQueryService;
-//        this.baseAuth_userName = baseAuth_userName;
-//        this.baseAuth_pwd = baseAuth_pwd;
-//    }
 
     public TRSTaskHandler(TrsBasicAuthOslcClient oslcClient, String sparqlUpdateService, String sparqlQueryService,
             String sparql_baseAuth_userName, String sparql_baseAuth_pwd, String baseAuth_userName,

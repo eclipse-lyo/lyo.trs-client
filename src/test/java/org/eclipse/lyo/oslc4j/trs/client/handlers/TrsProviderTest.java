@@ -14,7 +14,7 @@
  * Omar Kacimi         -  Initial implementation
  * Andrew Berezovskyi  -  Lyo contribution updates
  */
-package org.eclipse.lyo.oslc4j.trs.client;
+package org.eclipse.lyo.oslc4j.trs.client.handlers;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -31,6 +31,7 @@ import org.eclipse.lyo.core.trs.Modification;
 import org.eclipse.lyo.core.trs.Page;
 import org.eclipse.lyo.core.trs.TrackedResourceSet;
 import org.eclipse.lyo.oslc4j.trs.client.handlers.TrsProviderHandler;
+import org.eclipse.lyo.oslc4j.trs.client.util.TrsBasicAuthOslcClient;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -41,10 +42,9 @@ import org.junit.Test;
 
 public class TrsProviderTest {
 
-    // FIXME Andrew@2019-01-15: given TrsProviderHandler is commented out
-   /* @BeforeClass
+    @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        trsProvider = new TrsProviderHandler("", "", "", new TRSHttpClient(), "", "");
+        trsProvider = new TrsProviderHandler("", "", "", new TrsBasicAuthOslcClient(), "", "", null, null);
         trs = new TrackedResourceSet();
         cl_p1 = new ChangeLog();
         cl_p2 = new ChangeLog();
@@ -87,7 +87,7 @@ public class TrsProviderTest {
 
     @After
     public void tearDown() throws Exception {
-        trsProvider = new TrsProviderHandler("", "", "", new TRSHttpClient(), "", "");
+        trsProvider = new TrsProviderHandler("", "", "", new TrsBasicAuthOslcClient(), "", "", null, null);
         trs = new TrackedResourceSet();
         cl_p1 = new ChangeLog();
         cl_p2 = new ChangeLog();
@@ -178,11 +178,6 @@ public class TrsProviderTest {
         Assert.assertFalse(changeEventsList.contains(memb2_m1));
 
     }
-
-    // @Test
-    // public final void testCompressChanges() {
-    // // fail("Not yet implemented"); // TODO
-    // }
 
     private String changeEventUri() {
         return ceUriPrefix + "/" + changeEventNum++;
@@ -277,10 +272,10 @@ public class TrsProviderTest {
         try {
             rdfNiluri = new URI(RDF.nil.getURI());
         } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
+
     static String uriPrefix = "https://host";
 
     static String ceUriPrefix = uriPrefix + "/changeEvents";
@@ -304,6 +299,6 @@ public class TrsProviderTest {
     static Modification modif;
     static Base b_p1;
     static Base b_p2;
-    static TrsProviderHandler trsProvider;*/
+    static TrsProviderHandler trsProvider;
 
 }

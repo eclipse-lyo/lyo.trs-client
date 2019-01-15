@@ -34,7 +34,7 @@ import org.openrdf.repository.sparql.SPARQLRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// FIXME Andrew@2018-02-26: why RDF4J here?
+// TODO Andrew@2018-02-26: why RDF4J here?
 
 /**
  * * A utility class with static methods enabling the processing of trs tasks as
