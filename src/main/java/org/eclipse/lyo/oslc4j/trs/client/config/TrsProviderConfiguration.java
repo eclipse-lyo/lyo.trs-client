@@ -23,6 +23,7 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
  * @version $version-stub$
  * @since 0.0.1
  */
+@Deprecated
 public class TrsProviderConfiguration {
     private final String trsUri;
     private final String basicAuthUsername;

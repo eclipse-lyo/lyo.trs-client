@@ -24,6 +24,7 @@ import org.eclipse.lyo.oslc4j.trs.client.util.TrsBasicAuthOslcClient;
  * @version $version-stub$
  * @since 0.0.1
  */
+@Deprecated
 public class TrsConsumerConfiguration {
     private final String sparqlQueryUrl;
     private final String sparqlUpdateUrl;
