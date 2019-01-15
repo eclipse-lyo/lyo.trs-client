@@ -14,7 +14,7 @@
  * Omar Kacimi         -  Initial implementation
  * Andrew Berezovskyi  -  Lyo contribution updates
  */
-package org.eclipse.lyo.oslc4j.trs.client;
+package org.eclipse.lyo.oslc4j.trs.client.handlers;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -87,63 +87,57 @@ public class TrsProviderHandlerTest {
     private static String bUriPrefix = uriPrefix + "/bases";
     private static String clUriPrefix = uriPrefix + "/changeLogs";
 
-    // FIXME Andrew@2019-01-15: 
-//    @Test
-//    public final void testOptimizedChangesList() throws URISyntaxException {
-//        String baseMemberUri1 = baseMemberUri();
-//
-//        String baseMemberUri2 = baseMemberUri();
-//
-//        Creation memb1_c1 = new Creation();
-//        Modification memb1_m1 = new Modification();
-//        Modification memb1_m2 = new Modification();
-//        Deletion memb1_d1 = new Deletion();
-//
-//        initChangeEvent(memb1_c1, baseMemberUri1);
-//        initChangeEvent(memb1_m1, baseMemberUri1);
-//        initChangeEvent(memb1_m2, baseMemberUri1);
-//        initChangeEvent(memb1_d1, baseMemberUri1);
-//
-//        Creation memb2_c1 = new Creation();
-//        Modification memb2_m1 = new Modification();
-//        Modification memb2_m2 = new Modification();
-//
-//
-//        initChangeEvent(memb2_c1, baseMemberUri2);
-//        initChangeEvent(memb2_m1, baseMemberUri2);
-//        initChangeEvent(memb2_m2, baseMemberUri2);
-//
-//        ChangeLog changeLog = new ChangeLog();
-//
-//        changeLog.getChange().add(memb1_c1);
-//        changeLog.getChange().add(memb1_m1);
-//        changeLog.getChange().add(memb1_m2);
-//        changeLog.getChange().add(memb1_d1);
-//        changeLog.getChange().add(memb2_c1);
-//        changeLog.getChange().add(memb2_m1);
-//        changeLog.getChange().add(memb2_m2);
-//
-//        List<ChangeLog> changeLogsList = Collections.singletonList(changeLog);
-//
-//        List<ChangeEvent> changeEventsList = trsProvider.optimizedChangesList(changeLogsList);
-//
-//        Assert.assertTrue(changeEventsList.size() == 2);
-//
-//        Assert.assertTrue(changeEventsList.contains(memb1_d1));
-//        Assert.assertTrue(changeEventsList.contains(memb2_m2));
-//
-//        Assert.assertFalse(changeEventsList.contains(memb1_c1));
-//        Assert.assertFalse(changeEventsList.contains(memb1_m1));
-//        Assert.assertFalse(changeEventsList.contains(memb1_m2));
-//        Assert.assertFalse(changeEventsList.contains(memb2_c1));
-//        Assert.assertFalse(changeEventsList.contains(memb2_m1));
-//
-//    }
+    @Test
+    public final void testOptimizedChangesList() throws URISyntaxException {
+        String baseMemberUri1 = baseMemberUri();
 
-    // @Test
-    // public final void testCompressChanges() {
-    // // fail("Not yet implemented"); // TODO
-    // }
+        String baseMemberUri2 = baseMemberUri();
+
+        Creation memb1_c1 = new Creation();
+        Modification memb1_m1 = new Modification();
+        Modification memb1_m2 = new Modification();
+        Deletion memb1_d1 = new Deletion();
+
+        initChangeEvent(memb1_c1, baseMemberUri1);
+        initChangeEvent(memb1_m1, baseMemberUri1);
+        initChangeEvent(memb1_m2, baseMemberUri1);
+        initChangeEvent(memb1_d1, baseMemberUri1);
+
+        Creation memb2_c1 = new Creation();
+        Modification memb2_m1 = new Modification();
+        Modification memb2_m2 = new Modification();
+
+
+        initChangeEvent(memb2_c1, baseMemberUri2);
+        initChangeEvent(memb2_m1, baseMemberUri2);
+        initChangeEvent(memb2_m2, baseMemberUri2);
+
+        ChangeLog changeLog = new ChangeLog();
+
+        changeLog.getChange().add(memb1_c1);
+        changeLog.getChange().add(memb1_m1);
+        changeLog.getChange().add(memb1_m2);
+        changeLog.getChange().add(memb1_d1);
+        changeLog.getChange().add(memb2_c1);
+        changeLog.getChange().add(memb2_m1);
+        changeLog.getChange().add(memb2_m2);
+
+        List<ChangeLog> changeLogsList = Collections.singletonList(changeLog);
+
+        List<ChangeEvent> changeEventsList = trsProvider.optimizedChangesList(changeLogsList);
+
+        Assert.assertTrue(changeEventsList.size() == 2);
+
+        Assert.assertTrue(changeEventsList.contains(memb1_d1));
+        Assert.assertTrue(changeEventsList.contains(memb2_m2));
+
+        Assert.assertFalse(changeEventsList.contains(memb1_c1));
+        Assert.assertFalse(changeEventsList.contains(memb1_m1));
+        Assert.assertFalse(changeEventsList.contains(memb1_m2));
+        Assert.assertFalse(changeEventsList.contains(memb2_c1));
+        Assert.assertFalse(changeEventsList.contains(memb2_m1));
+
+    }
 
     private String changeEventUri() {
         return ceUriPrefix + "/" + changeEventNum++;
@@ -218,7 +212,6 @@ public class TrsProviderHandlerTest {
         try {
             rdfNiluri = new URI(RDF.nil.getURI());
         } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -281,57 +274,55 @@ public class TrsProviderHandlerTest {
         b_p2 = new Base();
     }
 
-    // FIXME Andrew@2019-01-15: 
-//    @Test
-//    public final void testBaseChangeEventsOptimization() {
-//        List<ChangeEvent> changeEventsList = new ArrayList<>();
-//        changeEventsList.add(creation);
-//        changeEventsList.add(modif);
-//
-//        URI changedCreation = creation.getChanged();
-//        URI changedModification = modif.getChanged();
-//        URI changedDeletion = deletion.getChanged();
-//
-//        b_p1.getMembers().add(changedCreation);
-//        b_p1.getMembers().add(changedModification);
-//        b_p1.getMembers().add(changedDeletion);
-//
-//        trsProvider.baseChangeEventsOptimization(changeEventsList, b_p1.getMembers());
-//
-//        Assert.assertFalse(b_p1.getMembers().contains(changedCreation));
-//        Assert.assertFalse(b_p1.getMembers().contains(changedModification));
-//        Assert.assertTrue(b_p1.getMembers().contains(changedDeletion));
-//    }
+    @Test
+    public final void testBaseChangeEventsOptimization() {
+        List<ChangeEvent> changeEventsList = new ArrayList<>();
+        changeEventsList.add(creation);
+        changeEventsList.add(modif);
 
-    // FIXME Andrew@2019-01-15: 
-//    @Test
-//    public final void testBaseChangeEventsOptimizationSafe() {
-//        List<ChangeEvent> changeEventsList = new ArrayList<>();
-//        changeEventsList.add(creation);
-//        changeEventsList.add(modif);
-//
-//        URI changedCreation = creation.getChanged();
-//        URI changedModification = modif.getChanged();
-//        URI changedDeletion = deletion.getChanged();
-//
-//        b_p1.getMembers().add(changedCreation);
-//        b_p1.getMembers().add(changedModification);
-//        b_p1.getMembers().add(changedDeletion);
-//
-//        final List<URI> compressedMemberList = trsProvider.baseChangeEventsOptimizationSafe
-//                (changeEventsList,
-//                b_p1.getMembers()
-//        );
-//
-//        Assert.assertTrue(b_p1.getMembers().contains(changedCreation));
-//        Assert.assertFalse(compressedMemberList.contains(changedCreation));
-//
-//        Assert.assertTrue(b_p1.getMembers().contains(changedModification));
-//        Assert.assertFalse(compressedMemberList.contains(changedModification));
-//
-//        Assert.assertTrue(b_p1.getMembers().contains(changedDeletion));
-//        Assert.assertTrue(compressedMemberList.contains(changedDeletion));
-//    }
+        URI changedCreation = creation.getChanged();
+        URI changedModification = modif.getChanged();
+        URI changedDeletion = deletion.getChanged();
+
+        b_p1.getMembers().add(changedCreation);
+        b_p1.getMembers().add(changedModification);
+        b_p1.getMembers().add(changedDeletion);
+
+        trsProvider.baseChangeEventsOptimization(changeEventsList, b_p1.getMembers());
+
+        Assert.assertFalse(b_p1.getMembers().contains(changedCreation));
+        Assert.assertFalse(b_p1.getMembers().contains(changedModification));
+        Assert.assertTrue(b_p1.getMembers().contains(changedDeletion));
+    }
+
+    @Test
+    public final void testBaseChangeEventsOptimizationSafe() {
+        List<ChangeEvent> changeEventsList = new ArrayList<>();
+        changeEventsList.add(creation);
+        changeEventsList.add(modif);
+
+        URI changedCreation = creation.getChanged();
+        URI changedModification = modif.getChanged();
+        URI changedDeletion = deletion.getChanged();
+
+        b_p1.getMembers().add(changedCreation);
+        b_p1.getMembers().add(changedModification);
+        b_p1.getMembers().add(changedDeletion);
+
+        final List<URI> compressedMemberList = trsProvider.baseChangeEventsOptimizationSafe
+                (changeEventsList,
+                b_p1.getMembers()
+        );
+
+        Assert.assertTrue(b_p1.getMembers().contains(changedCreation));
+        Assert.assertFalse(compressedMemberList.contains(changedCreation));
+
+        Assert.assertTrue(b_p1.getMembers().contains(changedModification));
+        Assert.assertFalse(compressedMemberList.contains(changedModification));
+
+        Assert.assertTrue(b_p1.getMembers().contains(changedDeletion));
+        Assert.assertTrue(compressedMemberList.contains(changedDeletion));
+    }
 
     private void initBase(Base base, URI previous) throws URISyntaxException {
 

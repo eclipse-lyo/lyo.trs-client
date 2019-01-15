@@ -182,7 +182,7 @@ public class ConcurrentTrsProviderHandler extends TrsProviderHandler {
                     ""
             );
 
-            // FIXME Andrew@2018-02-28: this is a YUGE query that can crash everything
+            // TODO Andrew@2018-02-28: this is a YUGE query that can crash everything
             // I think individual queries are better executed in the handlers
             String finalQueryString = queriesStringBuilder.toString();
             log.debug(finalQueryString);

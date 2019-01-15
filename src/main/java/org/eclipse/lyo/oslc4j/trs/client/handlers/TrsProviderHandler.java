@@ -82,29 +82,18 @@ public class TrsProviderHandler extends TRSTaskHandler {
      * @param sparqlUpdateService Set to null to disable the triplestore update
      */
     public TrsProviderHandler(String trsUriBase, String sparqlQueryService,
-            String sparqlUpdateService, TrsBasicAuthOslcClient trsHttpClient, String userName,
-            String pwd, String sparql_user, String sparql_pwd) {
+            String sparqlUpdateService, TrsBasicAuthOslcClient trsHttpClient, String providerUsername,
+            String providerPassword, String sparqlUsername, String sparqlPassword) {
         super(trsHttpClient,
                 sparqlUpdateService,
                 sparqlQueryService,
-                sparql_user,
-                sparql_pwd,
-                userName,
-                pwd
+                sparqlUsername,
+                sparqlPassword,
+                providerUsername,
+                providerPassword
         );
         this.trsUriBase = trsUriBase;
-        // TODO Andrew@2019-01-15:
-//        threadName = "TRS Provider: " + this.trsUriBase + " thread";
     }
-
-// FIXME Andrew@2019-01-15: needed by the unit tests
-//    public TrsProviderHandler(String trsUriBase, String sparqlQueryService,
-//            String sparqlUpdateService, TrsBasicAuthOslcClient trsHttpClient, String userName,
-//            String pwd) {
-//        super(trsHttpClient, sparqlQueryService, sparqlUpdateService, userName, pwd);
-//        this.trsUriBase = trsUriBase;
-////        threadName = "TRS Provider: " + this.trsUriBase + " thread";
-//    }
 
     @Override
     public String toString() {
@@ -112,7 +101,7 @@ public class TrsProviderHandler extends TRSTaskHandler {
     }
 
     public void attachListener(ChangeEventListener listener) {
-        // FIXME Andrew@2018-02-27: make it a list
+        // TODO Andrew@2018-02-27: make it a list
         if (this.listener != null) {
             throw new IllegalStateException(
                     "A listener has been attached already, a list is not supported yet.");
@@ -354,6 +343,7 @@ public class TrsProviderHandler extends TRSTaskHandler {
         if (indexingStage) {
 //            baseChangeEventsOptimization(compressedChanges, baseMembers);
             // FIXME Andrew@2018-02-28: the base resource gets lost at this stage
+            // Andrew@2019-01-15: not sure if I registered any resource losses before
             baseMembers = baseChangeEventsOptimizationSafe(compressedChanges, baseMembers);
 
             for (URI baseMemberUri : baseMembers) {
@@ -368,7 +358,7 @@ public class TrsProviderHandler extends TRSTaskHandler {
                                                           graphName,
                                                           sparqlUpdateService);
                     }
-                    // FIXME Andrew@2018-02-28: figure out how to pass TRS base indexing event
+                    // TODO Andrew@2018-02-28: figure out how to pass TRS base indexing event
                     // actually it is possible to generate a Creation event per resource in base!
                     notifyListener(null, baseResourceModel);
                     log.trace("Finished processing base member '{}' creation event", graphName);
@@ -442,7 +432,7 @@ public class TrsProviderHandler extends TRSTaskHandler {
      *
      * @return the optimized ordered list of change events
      */
-    protected List<ChangeEvent> optimizedChangesList(List<ChangeLog> changeLogs) {
+    List<ChangeEvent> optimizedChangesList(List<ChangeLog> changeLogs) {
         Collections.reverse(changeLogs);
 
         ChangeLog firstChangeLog = changeLogs.get(0);
@@ -477,11 +467,11 @@ public class TrsProviderHandler extends TRSTaskHandler {
         }
         changesToProcess.sort(new ChangeEventComparator());
 
+        // NB! Andrew@2018-02-27: this is not going to work for getting all changes via MQTT embedding
+        // TODO Andrew@2019-01-15: refactor to support MQTT
+        // TODO Andrew@2018-02-27: output warning for the events we missed if compress eliminated anything
+
         // replace all change events for a single resource with the latest event only
-        // FIXME Andrew@2018-02-27: this is not going to work for getting all changes via MQTT
-        // embedding
-        // TODO Andrew@2018-02-27: output warning for the events we missed if compress eliminated
-        // anything
         List<ChangeEvent> compressedChanges = compressChanges(changesToProcess);
         return compressedChanges;
     }

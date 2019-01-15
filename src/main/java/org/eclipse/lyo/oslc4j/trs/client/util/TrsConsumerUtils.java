@@ -27,9 +27,6 @@ import org.eclipse.lyo.oslc4j.trs.client.config.TrsConsumerConfiguration;
 import org.eclipse.lyo.oslc4j.trs.client.config.TrsProviderConfiguration;
 import org.eclipse.lyo.oslc4j.trs.client.handlers.ConcurrentTrsProviderHandler;
 import org.eclipse.lyo.oslc4j.trs.client.handlers.TrsProviderHandler;
-import org.eclipse.lyo.oslc4j.trs.client.mqtt.MqttTrsEventListener;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,69 +65,15 @@ public class TrsConsumerUtils {
         for (TrsProviderConfiguration cfg : providerConfigs) {
             TrsProviderHandler trsProvider = function.apply(consumerConfig, cfg);
             providers.add(trsProvider);
-            if (!Strings.isNullOrEmpty(cfg.getMqttBroker()) && !Strings.isNullOrEmpty(cfg
-                    .getMqttTopic())) {
-                // for now an HTTP impl is still needed for MQTT
-
-                // FIXME Andrew@2018-02-28: Rethink how we handle the new duality of the TRS updates
-                /*
-                So the idea is that we should always listen to MQTT and react quickly to it.
-                However, after startup we might have processed the base and the old changelog yet.
-
-                We should receive (and I would say, eagerly fetch corresponding TRS resources)
-                the change events over MQTT until the initialisation is done (TrsProviderHandler
-                actually uses a flag 'isIndexingStage' for exactly this purpose). In the very
-                advanced future we could potentially keep a HashSet of the MQTT updates that
-                invalidate any indexing stage efforts, further speeding it up.
-
-                Another thing is that we shall skip the periodic check in case a change event has
-                been received over MQTT during the update interval. Would be cumbersome to do it
-                via the ScheduledExecutorServer, should better do it by simply yielding on the
-                next invocation if the previous run occurred too recently.
-
-                One thing why I am commenting this out is that without a proper approach because
-                on synchronised queues and locking any "preindexing" will fail, because between
-                the time T1 when the indexing call 'pollAndProcessChanges()' returns and time T3
-                when the MqttTrsEventListener accepts an MQTT event there might be a missed event
-                 Em, which arrived to the MQTT topic at the time T2, T1<=T2<=T3.
-
-                 More immediate reason why I commented it out is that this invocation is done
-                 before Listeners are registered.
-                 */
-//                try {
-//                    // we actually need to wait here, but not in the listener
-//                    trsProvider.pollAndProcessChanges();
-//                } catch (OAuthException | JenaModelException | RepresentationRetrievalException |
-//                        ServerRollBackException | URISyntaxException | IOException e) {
-//                    log.error(
-//                            "Error polling the service provider {} before initialising MQTT " +
-//                                    "subscription",
-//                            trsProvider
-//                    );
-//                }
-
-                try {
-                    log.trace("Attempting to connect to an MQTT broker at '{}'",
-                            cfg.getMqttBroker()
-                    );
-                    MqttClient mqttClient = new MqttClient(cfg.getMqttBroker(),
-                            consumerConfig.getMqttClientId()
-                    );
-                    log.info("Connected to an MQTT broker at '{}'", cfg.getMqttBroker());
-                    mqttClient.setCallback(new MqttTrsEventListener(trsProvider,
-                                                                    cfg,
-                                                                    consumerConfig.getScheduler()
-                    ));
-                    mqttClient.connect();
-                    // used to be fixed to 'TRS'
-                    mqttClient.subscribe(cfg.getMqttTopic());
-                } catch (MqttException e) {
-                    log.error("Failed to connect to MQTT broker '{}', topic '{}':\n{}",
-                            cfg.getMqttBroker(),
-                            cfg.getMqttTopic(),
-                            e
-                    );
-                }
+            try {
+                // we actually need to wait here, but not in the listener
+                trsProvider.pollAndProcessChanges();
+            } catch (Exception e) {
+                log.error(
+                        "Error polling the service provider {} before initialising MQTT " +
+                                "subscription",
+                        trsProvider
+                );
             }
         }
 
