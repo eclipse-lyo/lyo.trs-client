@@ -21,7 +21,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
-import net.oauth.OAuthException;
 import org.apache.jena.rdf.model.Model;
 import org.eclipse.lyo.core.trs.ChangeEvent;
 import org.eclipse.lyo.core.trs.Deletion;
@@ -73,7 +72,7 @@ public class ChangeEventHandler extends TRSTaskHandler {
         this.modelSize = modelSize;
     }
 
-    private void processChangeEvent() throws IOException, OAuthException, URISyntaxException {
+    private void processChangeEvent() throws IOException, URISyntaxException {
         URI changed = handledChangeEvent.getChanged();
         logger.debug("creating query for resource " + changed.toString() + " change event ");
         String query;
@@ -105,7 +104,7 @@ public class ChangeEventHandler extends TRSTaskHandler {
     protected void processTRSTask() {
         try {
             processChangeEvent();
-        } catch (IOException | OAuthException | URISyntaxException e) {
+        } catch (IOException | URISyntaxException e) {
             logger.error("Error processing Change Events", e);
         }
     }

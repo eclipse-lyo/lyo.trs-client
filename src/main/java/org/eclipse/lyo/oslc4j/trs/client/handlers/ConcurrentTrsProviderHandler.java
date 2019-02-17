@@ -28,7 +28,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import net.oauth.OAuthException;
 import org.eclipse.lyo.core.trs.Base;
 import org.eclipse.lyo.core.trs.ChangeEvent;
 import org.eclipse.lyo.core.trs.ChangeLog;
@@ -72,7 +71,7 @@ public class ConcurrentTrsProviderHandler extends TrsProviderHandler {
     @Override
     public void pollAndProcessChanges()
             throws URISyntaxException, JenaModelException, IOException, ServerRollBackException,
-            RepresentationRetrievalException, OAuthException {
+            RepresentationRetrievalException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         Date processingDateStart = new Date();
         log.info("started dealing with TRS Provider: " + trsUriBase);
