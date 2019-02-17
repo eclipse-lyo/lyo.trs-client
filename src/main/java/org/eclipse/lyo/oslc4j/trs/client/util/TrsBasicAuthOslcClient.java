@@ -23,12 +23,10 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.core.Response;
-import net.oauth.OAuthException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.wink.client.ClientResponse;
-import org.eclipse.lyo.client.oslc.jazz.JazzFormAuthClient;
+import org.eclipse.lyo.oslc4j.client.OslcClient;
 import org.eclipse.lyo.oslc4j.core.model.AbstractResource;
 import org.eclipse.lyo.oslc4j.trs.client.exceptions.TrsEndpointConfigException;
 import org.eclipse.lyo.oslc4j.trs.client.exceptions.TrsEndpointErrorExpection;
@@ -45,7 +43,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Omar
  */
-public class TrsBasicAuthOslcClient extends JazzFormAuthClient {
+public class TrsBasicAuthOslcClient extends OslcClient {
 
     private static Logger log = LoggerFactory.getLogger(TrsBasicAuthOslcClient.class);
 
@@ -65,14 +63,15 @@ public class TrsBasicAuthOslcClient extends JazzFormAuthClient {
      */
     public Object fetchResourceUsingBaseAuth(String url, Class<?> objClass, String userName,
             String pwd)
-            throws IOException, OAuthException, URISyntaxException, TrsEndpointException {
-        ClientResponse clResp = fetchResourceUsingBasicAuth(url, userName, pwd);
+            throws IOException, URISyntaxException, TrsEndpointException {
+        Response clResp = fetchResourceUsingBasicAuth(url, userName, pwd);
 
-        final Response.Status.Family httpCodeType = clResp.getStatusType().getFamily();
+        final Response.StatusType responseInfo = clResp.getStatusInfo();
+        final Response.Status.Family httpCodeType = responseInfo.getFamily();
         if (httpCodeType.equals(Response.Status.Family.CLIENT_ERROR)) {
-            throw new TrsEndpointConfigException(clResp);
+            throw new TrsEndpointConfigException("Error " + responseInfo.getReasonPhrase());
         } else if (httpCodeType.equals(Response.Status.Family.SERVER_ERROR)) {
-            throw new TrsEndpointErrorExpection(clResp);
+            throw new TrsEndpointErrorExpection("Error " + responseInfo.getReasonPhrase());
         }
         // TODO Andrew@2018-02-28: split into 2 methods: unmarshalling a resource and for a model
         if (AbstractResource.class.isAssignableFrom(objClass)) {
@@ -81,12 +80,13 @@ public class TrsBasicAuthOslcClient extends JazzFormAuthClient {
                     "Getting entity of type '{}' for server response for resource '{}'",
                     objClass.getName(),
                     url);
-            objToRet = clResp.getEntity(objClass);
+            objToRet = clResp.readEntity(objClass);
             log.debug(
                     "Getting entity of type '{}' for server response for resource '{}'",
                     objClass.getName(),
                     url);
-            clResp.consumeContent();
+            // TODO decide if consumeEntity() shall be replaced with close()
+//            clResp.close();
             log.trace("Finished consuming content from server response");
             return objToRet;
         } else if (Model.class.isAssignableFrom(objClass)) {
@@ -107,11 +107,11 @@ public class TrsBasicAuthOslcClient extends JazzFormAuthClient {
      *
      * @return the http response from the server
      */
-    public ClientResponse fetchResourceUsingBasicAuth(String url, String userName, String pwd)
-            throws OAuthException, IOException, URISyntaxException {
+    public Response fetchResourceUsingBasicAuth(String url, String userName, String pwd)
+            throws IOException, URISyntaxException {
         log.debug("sending GET request to retrieve: " + url + " using basic credentials, user: "
                 + userName);
-        ClientResponse response = null;
+        Response response = null;
         Map<String, String> requestHeaders = new HashMap<String, String>();
 //        requestHeaders.put("Accept", "application/rdf+xml, application/xml;q=0.6, text/xml;
 // q=0.6");
@@ -142,14 +142,14 @@ public class TrsBasicAuthOslcClient extends JazzFormAuthClient {
      * @throws IOException thrown while reading from the response
      */
     public static Model extractModelFromResponse(String absoluteUrl,
-            final ClientResponse clientResponse) throws IOException {
+            final Response clientResponse) throws IOException {
 
         if (clientResponse == null) {
             log.debug("The server response for url: " + absoluteUrl + " is null. Returning null");
             return null;
         }
 
-        final String responseAsString = clientResponse.getEntity(String.class);
+        final String responseAsString = clientResponse.readEntity(String.class);
         log.trace("Response for {}:\n{}\n", absoluteUrl, responseAsString);
 
         if (responseAsString == null) {

@@ -10,8 +10,9 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <lyo.version>${project.version}</lyo.version>
-    <jena.version>3.6.0</jena.version>
+
+    <version.lyo>${project.version}</version.lyo>
+    <version.jena>3.6.0</version.jena>
   </properties>
 
   <build>
@@ -67,17 +68,17 @@
     <dependency>
       <groupId>org.eclipse.lyo</groupId>
       <artifactId>oslc-trs</artifactId>
-      <version>${lyo.version}</version>
+      <version>${version.lyo}</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.lyo.oslc4j.core</groupId>
       <artifactId>oslc4j-core</artifactId>
-      <version>${lyo.version}</version>
+      <version>${version.lyo}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-arq</artifactId>
-      <version>${jena.version}</version>
+      <version>${version.jena}</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -103,8 +104,8 @@
 
     <dependency>
       <groupId>org.eclipse.lyo.clients</groupId>
-      <artifactId>oslc-java-client</artifactId>
-      <version>${lyo.version}</version>
+      <artifactId>oslc4j-client</artifactId>
+      <version>${version.lyo}</version>
     </dependency>
 
     <!--TEST-->
@@ -118,7 +119,7 @@
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-tdb</artifactId>
-      <version>${jena.version}</version>
+      <version>${version.jena}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
