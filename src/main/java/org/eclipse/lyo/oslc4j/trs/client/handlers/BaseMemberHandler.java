@@ -51,7 +51,7 @@ public class BaseMemberHandler extends TRSTaskHandler {
     public BaseMemberHandler(TrsBasicAuthOslcClient oslcClient, String sparqlQueryService,
             String sparqlUpdateService, String baseAuth_userName, String baseAuth_pwd,
             String baseMemberUri, List<String> queries, AtomicLong modelSize) {
-        // FIXME Andrew@2018-03-01: use a common SPARQL interface
+        // TODO Andrew@2018-03-01: use a common SPARQL interface
         super(oslcClient,
                 sparqlQueryService,
                 sparqlUpdateService,

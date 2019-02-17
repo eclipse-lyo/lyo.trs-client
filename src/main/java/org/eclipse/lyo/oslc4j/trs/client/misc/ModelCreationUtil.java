@@ -38,6 +38,18 @@ import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.RepositoryConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.j2bugzilla.base.Bug;
+import com.j2bugzilla.base.BugFactory;
+import com.j2bugzilla.base.BugzillaConnector;
+import com.j2bugzilla.base.BugzillaException;
+import com.j2bugzilla.base.ConnectionException;
+import com.j2bugzilla.rpc.LogIn;
+import com.j2bugzilla.rpc.ReportBug;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.j2bugzilla.base.Bug;
 import com.j2bugzilla.base.BugFactory;
