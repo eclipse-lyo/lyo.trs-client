@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
-import net.oauth.OAuthException;
 import org.apache.jena.rdf.model.Model;
 import org.eclipse.lyo.oslc4j.trs.client.mqtt.ChangeEventMessage;
 import org.eclipse.lyo.oslc4j.trs.client.util.SparqlUtil;
@@ -36,7 +35,7 @@ import org.slf4j.LoggerFactory;
  */
 public class BaseMemberHandler extends TRSTaskHandler {
 
-    final static Logger logger = LoggerFactory.getLogger(BaseMemberHandler.class);
+    private final static Logger logger = LoggerFactory.getLogger(BaseMemberHandler.class);
     /*
      * the uri of the base member to be processed
      */ String baseMemberUri;
@@ -75,7 +74,7 @@ public class BaseMemberHandler extends TRSTaskHandler {
     protected void processTRSTask() {
         try {
             processBaseMemberAddition();
-        } catch (IOException | OAuthException | URISyntaxException e) {
+        } catch (IOException | URISyntaxException e) {
             logger.error("Error processing TRS task", e);
         }
     }
@@ -84,7 +83,7 @@ public class BaseMemberHandler extends TRSTaskHandler {
      * create the necessary sparql update for processing the base member
      */
     private void processBaseMemberAddition()
-            throws IOException, OAuthException, URISyntaxException {
+            throws IOException, URISyntaxException {
 
         logger.debug("processing base member " + baseMemberUri + " addition.  Creating necessary " +
                 "" + "" + "sparql update query ");
