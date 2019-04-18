@@ -26,7 +26,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.eclipse.lyo.oslc4j.client.OslcClient;
+import org.eclipse.lyo.client.oslc.OslcClient;
 import org.eclipse.lyo.oslc4j.core.model.AbstractResource;
 import org.eclipse.lyo.oslc4j.trs.client.exceptions.TrsEndpointConfigException;
 import org.eclipse.lyo.oslc4j.trs.client.exceptions.TrsEndpointErrorExpection;
