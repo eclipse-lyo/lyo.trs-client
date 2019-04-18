@@ -40,6 +40,7 @@ import org.eclipse.lyo.core.trs.Deletion;
 import org.eclipse.lyo.core.trs.Modification;
 import org.eclipse.lyo.core.trs.Page;
 import org.eclipse.lyo.core.trs.TrackedResourceSet;
+import org.eclipse.lyo.oslc4j.client.OslcClient;
 import org.eclipse.lyo.oslc4j.core.exception.OslcCoreApplicationException;
 import org.eclipse.lyo.oslc4j.core.model.AbstractResource;
 import org.eclipse.lyo.oslc4j.provider.jena.JenaModelHelper;
@@ -49,7 +50,6 @@ import org.eclipse.lyo.oslc4j.trs.client.mqtt.ChangeEventMessage;
 import org.eclipse.lyo.oslc4j.trs.client.util.ChangeEventComparator;
 import org.eclipse.lyo.oslc4j.trs.client.exceptions.RepresentationRetrievalException;
 import org.eclipse.lyo.oslc4j.trs.client.util.SparqlUtil;
-import org.eclipse.lyo.oslc4j.trs.client.util.TrsBasicAuthOslcClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,10 +79,10 @@ public class TrsProviderHandler extends TRSTaskHandler {
     /**
      * @param sparqlUpdateService Set to null to disable the triplestore update
      */
-    public TrsProviderHandler(String trsUriBase, String sparqlQueryService,
-            String sparqlUpdateService, TrsBasicAuthOslcClient trsHttpClient, String providerUsername,
-            String providerPassword, String sparqlUsername, String sparqlPassword) {
-        super(trsHttpClient,
+    public TrsProviderHandler(String trsUriBase, OslcClient client,
+            String sparqlUpdateService, String sparqlQueryService, String sparqlUsername,
+            String sparqlPassword, String providerUsername, String providerPassword) {
+        super(client,
                 sparqlUpdateService,
                 sparqlQueryService,
                 sparqlUsername,

@@ -21,9 +21,9 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import org.apache.jena.rdf.model.Model;
+import org.eclipse.lyo.oslc4j.client.OslcClient;
 import org.eclipse.lyo.oslc4j.trs.client.mqtt.ChangeEventMessage;
 import org.eclipse.lyo.oslc4j.trs.client.util.SparqlUtil;
-import org.eclipse.lyo.oslc4j.trs.client.util.TrsBasicAuthOslcClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,9 +47,9 @@ public class BaseMemberHandler extends TRSTaskHandler {
      * the size of the rdf representation of the rdf member
      */ AtomicLong modelSize;
 
-    public BaseMemberHandler(TrsBasicAuthOslcClient oslcClient, String sparqlQueryService,
-            String sparqlUpdateService, String baseAuth_userName, String baseAuth_pwd,
-            String baseMemberUri, List<String> queries, AtomicLong modelSize) {
+    public BaseMemberHandler(String baseMemberUri, List<String> queries, AtomicLong modelSize,
+            OslcClient oslcClient, String sparqlQueryService, String sparqlUpdateService, String baseAuth_userName,
+            String baseAuth_pwd) {
         // TODO Andrew@2018-03-01: use a common SPARQL interface
         super(oslcClient,
                 sparqlQueryService,

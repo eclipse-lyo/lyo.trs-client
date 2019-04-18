@@ -24,9 +24,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.jena.rdf.model.Model;
 import org.eclipse.lyo.core.trs.ChangeEvent;
 import org.eclipse.lyo.core.trs.Deletion;
+import org.eclipse.lyo.oslc4j.client.OslcClient;
 import org.eclipse.lyo.oslc4j.trs.client.mqtt.ChangeEventMessage;
 import org.eclipse.lyo.oslc4j.trs.client.util.SparqlUtil;
-import org.eclipse.lyo.oslc4j.trs.client.util.TrsBasicAuthOslcClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,9 +53,9 @@ public class ChangeEventHandler extends TRSTaskHandler {
      */
     AtomicLong modelSize;
 
-    public ChangeEventHandler(TrsBasicAuthOslcClient oslcClient, String sparqlQueryService,
-            String sparqlUpdateService, String basicAuthUsername, String basicAuthPassword,
-            ChangeEvent handledChangeEvent, List<String> queries, AtomicLong modelSize) {
+    public ChangeEventHandler(ChangeEvent handledChangeEvent, List<String> queries,
+            AtomicLong modelSize, OslcClient oslcClient, String sparqlUpdateService, String sparqlQueryService,
+            String basicAuthUsername, String basicAuthPassword) {
         // here we assume the triplestore is not auth-protected, hence nulls
         super(oslcClient,
                 sparqlUpdateService,
