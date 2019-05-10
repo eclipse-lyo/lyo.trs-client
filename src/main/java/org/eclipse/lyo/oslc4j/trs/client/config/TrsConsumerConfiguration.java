@@ -39,7 +39,7 @@ public class TrsConsumerConfiguration {
     private OslcClient httpClient;
 
     public TrsConsumerConfiguration(final String sparqlQueryUrl, final String sparqlUpdateUrl,
-            final String sparqlUsername, final String sparqlPassword, final String mqttClientId,
+            final String sparqlUsername, final String sparqlPassword,
             final ScheduledExecutorService scheduler, final String basicUsername,
             final String basicPassword) {
         this.sparqlQueryUrl = sparqlQueryUrl;
