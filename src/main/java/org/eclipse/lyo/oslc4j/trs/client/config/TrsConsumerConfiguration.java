@@ -33,7 +33,6 @@ public class TrsConsumerConfiguration {
     private final String sparqlUpdateUrl;
     private final String sparqlUsername;
     private final String sparqlPassword;
-    private final String mqttClientId;
     private final ScheduledExecutorService scheduler;
     private final String basicUsername;
     private final String basicPassword;
@@ -47,7 +46,6 @@ public class TrsConsumerConfiguration {
         this.sparqlUpdateUrl = sparqlUpdateUrl;
         this.sparqlUsername = sparqlUsername;
         this.sparqlPassword = sparqlPassword;
-        this.mqttClientId = mqttClientId;
         this.scheduler = scheduler;
         this.basicUsername = basicUsername;
         this.basicPassword = basicPassword;
@@ -55,10 +53,6 @@ public class TrsConsumerConfiguration {
 
     public ScheduledExecutorService getScheduler() {
         return scheduler;
-    }
-
-    public String getMqttClientId() {
-        return mqttClientId;
     }
 
     public String getSparqlQueryUrl() {
