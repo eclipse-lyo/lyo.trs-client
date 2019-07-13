@@ -20,13 +20,6 @@ import javax.ws.rs.client.ClientBuilder;
 import org.eclipse.lyo.oslc4j.client.OslcClient;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 
-/**
- * Created on 2018-02-27
- *
- * @author Andrew Berezovskyi (andriib@kth.se)
- * @version $version-stub$
- * @since 0.0.1
- */
 @Deprecated
 public class TrsConsumerConfiguration {
     private final String sparqlQueryUrl;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018   KTH Royal Institute of Technology.
+ * Copyright (c) 2016 KTH Royal Institute of Technology and others
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -8,12 +8,8 @@
  * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
  * and the Eclipse Distribution License is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
- *
- * Contributors:
- *
- * Omar Kacimi         -  Initial implementation
- * Andrew Berezovskyi  -  Lyo contribution updates
  */
+
 package org.eclipse.lyo.oslc4j.trs.client;
 
 import java.io.IOException;
@@ -48,16 +44,6 @@ import com.j2bugzilla.base.BugzillaException;
 import com.j2bugzilla.base.ConnectionException;
 import com.j2bugzilla.rpc.LogIn;
 import com.j2bugzilla.rpc.ReportBug;
-
-import com.j2bugzilla.base.Bug;
-import com.j2bugzilla.base.BugFactory;
-import com.j2bugzilla.base.BugzillaConnector;
-import com.j2bugzilla.base.BugzillaException;
-import com.j2bugzilla.base.ConnectionException;
-import com.j2bugzilla.rpc.LogIn;
-import com.j2bugzilla.rpc.ReportBug;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * contains utility classes to create bugzilla bugs, and to link data in the
